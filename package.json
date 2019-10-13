@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "npm run build && node server.js"
+    "postinstall": "npm run build",
+    "start": "node server.js"
   },
   "dependencies": {
     "core-js": "^2.6.5",
