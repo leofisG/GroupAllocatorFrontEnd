@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <UploadCSV msg="Welcome to Your Vue.js App"/>
+    <UploadCSV/>
   </div>
 </template>
 
@@ -11,6 +11,9 @@ export default {
   name: 'app',
   components: {
     UploadCSV
+  },
+  created() {
+    document.title = "Student allocator"
   }
 }
 </script>

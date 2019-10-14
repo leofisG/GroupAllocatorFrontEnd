@@ -1,15 +1,29 @@
 <template>
   <div class="upload">
     <h1>Upload CSV here.</h1>
-    <button>Upload CSV</button>
+    <p>{{ fileName }}</p>
+    <input type="file" ref="file" style="display: none" v-on:change="processCSV">
+    <button v-if="noFile" @click="$refs.file.click()">Upload CSV</button>
+    <button v-if="!noFile"> Continue</button>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+  name: 'upload',
+  data() {
+    return {
+      fileName: "Choose a file",
+      file: null,
+      noFile: true
+    }
+  },
+  methods: {
+    processCSV() {
+      this.noFile = false
+      this.file = this.$refs.file.files[0]
+      this.fileName = `You have uploaded ${this.file.name}`
+    }
   }
 }
 </script>
