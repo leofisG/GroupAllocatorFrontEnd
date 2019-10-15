@@ -14,6 +14,7 @@ export default {
   },
   created() {
     document.title = "Student allocator"
+    console.log("Web created")
   }
 }
 </script>

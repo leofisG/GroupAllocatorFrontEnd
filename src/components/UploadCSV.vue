@@ -9,6 +9,8 @@
 </template>
 
 <script>
+import { parse } from '../myparser'
+
 export default {
   name: 'upload',
   data() {
@@ -20,9 +22,11 @@ export default {
   },
   methods: {
     processCSV() {
+      console.log("Processing CSV file")
       this.noFile = false
       this.file = this.$refs.file.files[0]
       this.fileName = `You have uploaded ${this.file.name}`
+      parse(this.file)
     }
   }
 }
