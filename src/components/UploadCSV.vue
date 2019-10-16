@@ -1,47 +1,73 @@
 <template>
   <div class="upload">
-    <h1>Upload CSV here.</h1>
-    <p v-bind:style="messageStyle">{{ message }}</p>
-    <input type="file" ref="file" style="display: none" v-on:change="processCSV">
-    <button v-if="noFile" @click="$refs.file.click()">Upload CSV</button>
-    <button v-if="!noFile" @click="parse"> Continue</button>
+    <v-app id="upload">
+      <v-content>
+        <v-container class="fill-height" fluid>
+          <v-row align="center" justify="center">
+            <v-col cols="12" sm="8" md="4">
+              <v-card class="elevation-12">
+                <v-toolbar color="primary" dark flat>
+                  <v-toolbar-title>Upload a CSV file</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                </v-toolbar>
+                <v-card-text>
+                  <v-form>
+                    <v-file-input
+                      @change="resetMsg"
+                      v-model="file"
+                      ref="file"
+                      accept=".csv"
+                      label="Upload CSV"
+                      show-size
+                    ></v-file-input>
+                  </v-form>
+                  <v-alert
+                    type="error"
+                    v-bind:style="messageStyle"
+                    v-if="message != &quot;&quot;"
+                  >{{ message }}</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn v-if="this.file" @click="parse" color="primary">Continue</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-content>
+    </v-app>
   </div>
 </template>
 
 <script>
-import { parse } from '../myparser'
+import { parse } from "../myparser";
 
 export default {
-  name: 'upload',
+  name: "upload",
   data() {
     return {
-      message: "Choose a file",
+      message: "",
       messageStyle: {
-        color: 'black'
+        color: "black"
       },
       file: null,
-      noFile: true
-    }
+      validFile: true
+    };
   },
   methods: {
-    processCSV() {
-      console.log("Processing CSV file")
-      this.noFile = false
-      this.file = this.$refs.file.files[0]
-      this.messageStyle.color = 'black'
-      this.message = `You have uploaded ${this.file.name}`
+    resetMsg() {
+      this.message = "";
     },
     parse() {
-        parse(this.file, this)
+      parse(this.file, this);
     },
     displayErrors(amount) {
-      this.noFile = true
-      this.file = null
-      this.messageStyle.color = 'red'
-      this.message = `There were ${amount} errors parsing the csv file!`
+      this.file = null;
+      this.message = `There were ${amount} errors parsing the csv file!`;
     }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -1,25 +1,199 @@
 <template>
   <div class="display">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <td v-for="(value, name) in data[0]" v-bind:key="name">{{ name }}</td>
-        <tr>
-      </thead>
-      <tr v-for="student in data" v-bind:key="student.id">
-        <td v-for="property in student" v-bind:key="property">{{ property }}</td>
-      </tr>
-    </table>
+    <v-app id="mainScreen">
+      <v-navigation-drawer v-model="drawer" app clipped :width="325">
+        <v-list dense class="fill-height">
+          <v-list-item style="background-color: #FFBABA;" @click.stop="backDialog = true">
+            <v-list-item-action>
+              <v-icon>mdi-arrow-left-bold</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title >Go back</v-list-item-title>
+            </v-list-item-content>
+            <v-dialog v-model="backDialog" max-width="400">
+              <v-card>
+                <v-card-title class="headline justify-center">Go back to the upload screen?</v-card-title>
+                <v-card-text>Your work will be lost if you do!</v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="green darken-1" text @click="backDialog = false">Stay</v-btn>
+                  <v-btn color="red" text @click="goBack">Go back</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-list-item>
+          <v-list-item>
+            <v-card width="100%">
+              <v-card-title class="justify-center">Group size</v-card-title>
+              <v-list-item>
+                <v-select
+                  v-model="groupSizeType"
+                  :items="['Fixed', 'Variable']"
+                  label="Filter type"
+                ></v-select>
+              </v-list-item>
+              <v-list-item>
+                <v-text-field
+                  v-if="groupSizeType == &quot;Fixed&quot;"
+                  type="number"
+                  min="1"
+                  label="Group size"
+                  clearable
+                  v-model="fixedGroupSize"
+                  @change="validateGroupSize"
+                ></v-text-field>
+                <v-range-slider
+                  v-if="groupSizeType != &quot;Fixed&quot;"
+                  v-model="variableGroupRange"
+                  :max="groupSizeUpperBound"
+                  :min="groupSizeLowerBound"
+                  :thumb-size="24"
+                  thumb-label="always"
+                >
+                <template v-slot:prepend>
+                <v-text-field
+                  @change="validateGroupLowerBound"
+                  v-model="groupSizeLowerBound"
+                  class="mt-0 pt-0"
+                  hide-details
+                  single-line
+                  type="number"
+                  style="width: 50px"
+                ></v-text-field>
+              </template>
+              <template v-slot:append>
+                <v-text-field
+                  @change="validateGroupUpperBound"
+                  v-model="groupSizeUpperBound"
+                  class="mt-0 pt-0"
+                  hide-details
+                  single-line
+                  type="number"
+                  style="width: 50px"
+                ></v-text-field>
+              </template>
+                </v-range-slider>
+              </v-list-item>
+            </v-card>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+
+      <v-app-bar app clipped-left>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-toolbar-title>Student Allocator</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn color="green darken-1" justify-end @click="nextDialog = true">Submit allocation</v-btn>
+        <v-dialog v-model="nextDialog" max-width="400">
+          <v-card>
+            <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
+            <v-card-text>Have you chosen the correct filters?</v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="nextDialog = false">back</v-btn>
+              <v-btn color="green darken-1" text @click="sendRequest">Confirm</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-app-bar>
+      <v-content>
+        <v-container class="fill-height" fluid>
+          <v-row class="fill-height" align="start" justify="center">
+            <v-col>
+              <v-card height="100%">
+                <v-card-title>
+                  Students
+                  <v-spacer></v-spacer>
+                  <v-text-field v-model="search" label="Search" single-line hide-details></v-text-field>
+                </v-card-title>
+                <v-data-table
+                  :headers="headers"
+                  :items="data"
+                  :footer-props="{
+                     'items-per-page-options': [20, 50, 100, -1]
+                  }"
+                  :items-per-page="20"
+                  :search="search"
+                  class="elevation-1"
+                  loading-text="Loading... Please wait"
+                ></v-data-table>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-content>
+    </v-app>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'display',
+  name: "display",
   props: {
-    data: Array
+    data: Array,
+    headers: Array
   },
-}
+  data: function() {
+    return {
+      search: "",
+      drawer: null,
+      backDialog: false,
+      nextDialog: false,
+      groupSizeType: "Fixed",
+      studentAmount: this.data.length,
+      fixedGroupSize: 1,
+      variableGroupRange: [2, 6],
+      groupSizeLowerBound: 1,
+      groupSizeUpperBound: 6
+    };
+  },
+  methods: {
+    goBack() {
+      this.$emit("back");
+    },
+    sendRequest() {},
+    validateGroupSize() {
+      if (this.fixedGroupSize <= 0) {
+        this.fixedGroupSize = 1;
+      }
+      if (this.fixedGroupSize >= this.studentAmount) {
+        this.fixedGroupSize = this.studentAmount - 1;
+      }
+    },
+    validateGroupLowerBound() {
+      if (this.groupSizeLowerBound <= 0) {
+        this.groupSizeLowerBound = 1
+      }
+      if (this.groupSizeLowerBound >= this.groupSizeUpperBound) {
+        this.groupSizeLowerBound = this.groupSizeUpperBound - 1
+      }
+      if (this.groupSizeLowerBound >= this.studentAmount - 1) {
+        this.groupSizeLowerBound = this.studentAmount - 2
+      }
+      this.validateGroupRange()
+    },
+    validateGroupUpperBound() {
+      if (this.groupSizeUpperBound <= 0) {
+        this.groupSizeUpperBound = 2
+      }
+      if (this.groupSizeUpperBound <= this.groupSizeLowerBound) {
+        this.groupSizeUpperBound = this.groupSizeLowerBound + 1
+      }
+      if (this.groupSizeUpperBound >= this.studentAmount) {
+        this.groupSizeUpperBound = this.studentAmount - 1
+      }
+      this.validateGroupRange
+    },
+    validateGroupRange() {
+      if (this.variableGroupRange[0] < this.groupSizeLowerBound) {
+        this.variableGroupRange[0] = this.groupSizeLowerBound
+      }
+      if (this.variableGroupRange[1] > this.groupSizeUpperBound) {
+        this.variableGroupRange[1] = this.groupSizeUpperBound
+      }
+    }
+  }
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
