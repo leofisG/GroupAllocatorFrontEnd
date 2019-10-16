@@ -14,16 +14,16 @@ var translationMap = new Map([
 ])
 
 
-export function parse(file) {
+export function parse(file, event) {
     Papa.parse(file, {
         header: true,
         complete: function(results) {
-            furtuerParse(results.data)
+            furtherParse(results.data, event)
         }
     })
 }
 
-function furtuerParse(data) {
+function furtherParse(data) {
     var attributeList = Array.from(translationMap.keys());
     var res = []
     data.forEach(element => {
@@ -38,5 +38,5 @@ function furtuerParse(data) {
     });
     // eslint-disable-next-line no-console
     console.log(res[0]);
-    return res
+    event.$emit('parsed', res)
 }

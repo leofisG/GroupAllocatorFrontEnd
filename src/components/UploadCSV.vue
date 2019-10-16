@@ -26,7 +26,7 @@ export default {
       this.noFile = false
       this.file = this.$refs.file.files[0]
       this.fileName = `You have uploaded ${this.file.name}`
-      parse(this.file)
+      parse(this.file, this)
     }
   }
 }

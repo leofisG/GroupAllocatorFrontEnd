@@ -1,16 +1,30 @@
 <template>
   <div id="app">
-    <UploadCSV/>
+    <UploadCSV v-if="!uploaded" @parsed="setData"></UploadCSV>
+    <DisplayStudents v-if="uploaded" data="data"></DisplayStudents>
   </div>
 </template>
 
 <script>
 import UploadCSV from './components/UploadCSV.vue'
+import DisplayStudents from './components/DisplayStudents.vue'
 
 export default {
   name: 'app',
+  data: function() {
+    return {
+      uploaded: false,
+      data: {}
+    }
+  },
+  methods: {
+    setData(data) {
+      this.data = data
+    }
+  },
   components: {
-    UploadCSV
+    UploadCSV,
+    DisplayStudents
   },
   created() {
     document.title = "Student allocator"
