@@ -1,10 +1,10 @@
 <template>
   <div class="upload">
     <h1>Upload CSV here.</h1>
-    <p>{{ fileName }}</p>
+    <p v-bind:style="messageStyle">{{ message }}</p>
     <input type="file" ref="file" style="display: none" v-on:change="processCSV">
     <button v-if="noFile" @click="$refs.file.click()">Upload CSV</button>
-    <button v-if="!noFile"> Continue</button>
+    <button v-if="!noFile" @click="parse"> Continue</button>
   </div>
 </template>
 
@@ -15,7 +15,10 @@ export default {
   name: 'upload',
   data() {
     return {
-      fileName: "Choose a file",
+      message: "Choose a file",
+      messageStyle: {
+        color: 'black'
+      },
       file: null,
       noFile: true
     }
@@ -25,8 +28,17 @@ export default {
       console.log("Processing CSV file")
       this.noFile = false
       this.file = this.$refs.file.files[0]
-      this.fileName = `You have uploaded ${this.file.name}`
-      parse(this.file, this)
+      this.messageStyle.color = 'black'
+      this.message = `You have uploaded ${this.file.name}`
+    },
+    parse() {
+        parse(this.file, this)
+    },
+    displayErrors(amount) {
+      this.noFile = true
+      this.file = null
+      this.messageStyle.color = 'red'
+      this.message = `There were ${amount} errors parsing the csv file!`
     }
   }
 }

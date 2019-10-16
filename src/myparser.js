@@ -6,7 +6,7 @@ var translationMap = new Map([
     ["Country", "country"],
     ["Gender", "gender"],
     ["DOB", "dob"],
-    ["Currenty City", "currentCity"],
+    ["Current City", "currentCity"],
     ["Subject Area", "career"],
     ["Qualification Description", "degree"],
     ["Work exp. on application", "workYearNum"],
@@ -17,13 +17,18 @@ var translationMap = new Map([
 export function parse(file, event) {
     Papa.parse(file, {
         header: true,
+        skipEmptyLines: true,
         complete: function(results) {
-            furtherParse(results.data, event)
+            if (results.errors.length > 0) {
+                event.displayErrors(results.errors.length)
+            } else {
+                furtherParse(results.data, event)
+            }
         }
     })
 }
 
-function furtherParse(data) {
+function furtherParse(data, event) {
     var attributeList = Array.from(translationMap.keys());
     var res = []
     data.forEach(element => {

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <UploadCSV v-if="!uploaded" @parsed="setData"></UploadCSV>
-    <DisplayStudents v-if="uploaded" data="data"></DisplayStudents>
+    <DisplayStudents v-if="uploaded" v-bind:data="data"></DisplayStudents>
   </div>
 </template>
 
@@ -20,6 +20,7 @@ export default {
   methods: {
     setData(data) {
       this.data = data
+      this.uploaded = true
     }
   },
   components: {

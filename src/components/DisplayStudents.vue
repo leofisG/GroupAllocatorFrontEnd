@@ -1,13 +1,24 @@
 <template>
   <div class="display">
-    <h1>Upload done</h1>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <td v-for="(value, name) in data[0]" v-bind:key="name">{{ name }}</td>
+        <tr>
+      </thead>
+      <tr v-for="student in data" v-bind:key="student.id">
+        <td v-for="property in student" v-bind:key="property">{{ property }}</td>
+      </tr>
+    </table>
   </div>
 </template>
 
 <script>
 export default {
   name: 'display',
-  props: ['data'],
+  props: {
+    data: Array
+  },
 }
 </script>
 
