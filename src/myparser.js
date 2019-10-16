@@ -1,7 +1,18 @@
 import Papa from 'papaparse'
 
-var criticalList = ['cid', 'lastname', 'age', 
-'firstname', 'country', 'city', 'cohort', 'region'];
+
+var translationMap = new Map([
+    ["CID", "id"],
+    ["Country", "country"],
+    ["Gender", "gender"],
+    ["DOB", "dob"],
+    ["Currenty City", "currentCity"],
+    ["Subject Area", "career"],
+    ["Qualification Description", "degree"],
+    ["Work exp. on application", "workYearNum"],
+    ["Current Cohort", "cohort"]
+])
+
 
 export function parse(file) {
     Papa.parse(file, {
@@ -13,18 +24,19 @@ export function parse(file) {
 }
 
 function furtuerParse(data) {
+    var attributeList = Array.from(translationMap.keys());
+    var res = []
     data.forEach(element => {
-        var x
-        var additionalAttributes = new Map();
-        for (x in element) {
-            if (!(criticalList.includes(x.toLocaleLowerCase()))) {
-                additionalAttributes[x] = element[x];
-                delete element[x]
+        var newElement = {}
+        var attribute
+        for (attribute in element) {
+            if (attributeList.includes(attribute)) {
+                newElement[translationMap.get(attribute)] = element[attribute]
             }
-            element.additionalAttributes = additionalAttributes 
         }
+        res.push(newElement)
     });
     // eslint-disable-next-line no-console
-    console.log(data[0]);
-    return data
+    console.log(res[0]);
+    return res
 }
