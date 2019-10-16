@@ -22,11 +22,23 @@ export default {
   },
   methods: {
     processCSV() {
-      console.log("Processing CSV file")
       this.noFile = false
       this.file = this.$refs.file.files[0]
       this.fileName = `You have uploaded ${this.file.name}`
       parse(this.file)
+    },
+    sendStudentDataToBackEnd(data) {
+      const axios = require('axios')
+      axios.post('/allocateGroups', data).then(function(res) {
+        // TODO: Call the method to show the data here.
+        // eslint-disable-next-line no-console
+        console.log(res)
+      })
+      .catch(function(err) {
+        // TODO: Call the method to show the error message here.
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
     }
   }
 }
