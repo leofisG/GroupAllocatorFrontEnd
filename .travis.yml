@@ -9,6 +9,6 @@ stages:
 jobs:
   include:
   - stage: lint
-    script: skip
+    script: npm run lint
   - stage: build
     script: npm run build
