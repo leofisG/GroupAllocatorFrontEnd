@@ -1,35 +1,92 @@
 <template>
   <div class="upload">
-    <h1>Upload CSV here.</h1>
-    <p>{{ fileName }}</p>
-    <input type="file" ref="file" style="display: none" v-on:change="processCSV">
-    <button v-if="noFile" @click="$refs.file.click()">Upload CSV</button>
-    <button v-if="!noFile"> Continue</button>
+    <v-app id="upload">
+      <v-content>
+        <v-container class="fill-height" fluid>
+          <v-row align="center" justify="center">
+            <v-col cols="12" sm="8" md="4">
+              <v-card class="elevation-12">
+                <v-toolbar color="primary" dark flat>
+                  <v-toolbar-title>Upload a CSV file</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                </v-toolbar>
+                <v-card-text>
+                  <v-form>
+                    <v-file-input
+                      @change="resetMsg"
+                      v-model="file"
+                      ref="file"
+                      accept=".csv"
+                      label="Upload CSV"
+                      show-size
+                    ></v-file-input>
+                  </v-form>
+                  <v-alert
+                    type="error"
+                    v-bind:style="messageStyle"
+                    v-if="message != &quot;&quot;"
+                  >{{ message }}</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn v-if="this.file" @click="parse" color="primary">Continue</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-content>
+    </v-app>
   </div>
 </template>
 
 <script>
-import { parse } from '../myparser'
+import { parse } from "../myparser";
 
 export default {
-  name: 'upload',
+  name: "upload",
   data() {
     return {
-      fileName: "Choose a file",
+      message: "",
+      messageStyle: {
+        color: "black"
+      },
       file: null,
-      noFile: true
-    }
+      validFile: true
+    };
   },
   methods: {
     processCSV() {
-      console.log("Processing CSV file")
       this.noFile = false
       this.file = this.$refs.file.files[0]
       this.fileName = `You have uploaded ${this.file.name}`
       parse(this.file)
+    },
+    sendStudentDataToBackEnd(data) {
+      const axios = require('axios')
+      axios.post('/allocateGroups', data).then(function(res) {
+        // TODO: Call the method to show the data here.
+        // eslint-disable-next-line no-console
+        console.log(res)
+      })
+      .catch(function(err) {
+        // TODO: Call the method to show the error message here.
+        // eslint-disable-next-line no-console
+        console.log(err)
+      })
+    },
+    resetMsg() {
+      this.message = "";
+    },
+    parse() {
+      parse(this.file, this);
+    },
+    displayErrors(amount) {
+      this.file = null;
+      this.message = `There were ${amount} errors parsing the csv file!`;
     }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
