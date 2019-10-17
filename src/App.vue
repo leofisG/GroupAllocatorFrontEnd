@@ -3,6 +3,7 @@
     <transition name="fade">
       <UploadCSV v-if="!uploaded" @parsed="setData"></UploadCSV>
     </transition>
+
     <transition name="fade">
       <DisplayStudents
         v-if="uploaded"
@@ -43,7 +44,6 @@ export default {
   },
   created() {
     document.title = "Student allocator";
-    console.log("Web created");
   }
 };
 </script>
