@@ -151,7 +151,36 @@ export default {
     goBack() {
       this.$emit("back");
     },
-    sendRequest() {},
+    sendRequest() {
+      const filters = this.generateFilters()
+      const requestData = {
+        filters: filters,
+        students: this.data
+      }
+      const xml = new XMLHttpRequest()
+      xml.open("POST", "https://organiser-app.herokuapp.com/allocateGroups", true)
+      xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xml.onreadystatechange = () => {
+        if (this.readyState == 4 && this.status == 200) {
+          console.log(xml.responseText)
+        } else {
+          console.log("failed")
+          console.log(xml.responseText)
+        }
+      }
+      xml.send(JSON.stringify(requestData));
+    },
+    generateFilters() {
+      const filters = {}
+      if (this.groupSizeType == "Fixed") {
+        filters.groupSizeLowerBound = this.fixedGroupSize
+        filters.groupSizeUpperBound = this.fixedGroupSize
+      } else {
+        filters.groupSizeLowerBound = this.groupSizeLowerBound
+        filters.groupSizeUpperBound = this.groupSizeUpperBound
+      }
+      return filters
+    },
     validateGroupSize() {
       if (this.fixedGroupSize <= 0) {
         this.fixedGroupSize = 1;
