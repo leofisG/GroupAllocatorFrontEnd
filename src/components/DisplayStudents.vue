@@ -3,12 +3,12 @@
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense class="fill-height">
-          <v-list-item style="background-color: #FFBABA;" @click.stop="backDialog = true">
+            <v-list-item class="pa-2 ma-2" style="background-color: #FFBABA;" @click.stop="backDialog = true">
             <v-list-item-action>
               <v-icon>mdi-arrow-left-bold</v-icon>
             </v-list-item-action>
             <v-list-item-content>
-              <v-list-item-title >Go back</v-list-item-title>
+              <v-list-item-title>Go back</v-list-item-title>
             </v-list-item-content>
             <v-dialog v-model="backDialog" max-width="400">
               <v-card>
@@ -22,7 +22,7 @@
               </v-card>
             </v-dialog>
           </v-list-item>
-          <v-list-item>
+          <v-list-item class="pa-2">
             <v-card width="100%">
               <v-card-title class="justify-center">Group size</v-card-title>
               <v-list-item>
@@ -50,29 +50,52 @@
                   :thumb-size="24"
                   thumb-label="always"
                 >
-                <template v-slot:prepend>
-                <v-text-field
-                  @change="validateGroupLowerBound"
-                  v-model="groupSizeLowerBound"
-                  class="mt-0 pt-0"
-                  hide-details
-                  single-line
-                  type="number"
-                  style="width: 50px"
-                ></v-text-field>
-              </template>
-              <template v-slot:append>
-                <v-text-field
-                  @change="validateGroupUpperBound"
-                  v-model="groupSizeUpperBound"
-                  class="mt-0 pt-0"
-                  hide-details
-                  single-line
-                  type="number"
-                  style="width: 50px"
-                ></v-text-field>
-              </template>
+                  <template v-slot:prepend>
+                    <v-text-field
+                      @change="validateGroupLowerBound"
+                      v-model="groupSizeLowerBound"
+                      class="mt-0 pt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                      style="width: 50px"
+                    ></v-text-field>
+                  </template>
+                  <template v-slot:append>
+                    <v-text-field
+                      @change="validateGroupUpperBound"
+                      v-model="groupSizeUpperBound"
+                      class="mt-0 pt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                      style="width: 50px"
+                    ></v-text-field>
+                  </template>
                 </v-range-slider>
+              </v-list-item>
+            </v-card>
+          </v-list-item>
+          <v-list-item  class="pa-2">
+            <v-card width="100%">
+              <v-card-title class="justify-center">Timezones</v-card-title>
+              <v-list-item>
+                <v-select
+                  v-model="timeZoneType"
+                  :items="['Same', 'Different']"
+                  label="Filter type"
+                ></v-select>
+              </v-list-item>
+              <v-list-item>
+                <v-text-field
+                  v-if="timeZoneType == &quot;Different&quot;"
+                  type="number"
+                  min="0"
+                  label="Timezone difference"
+                  clearable
+                  v-model="timeZoneDiff"
+                  @change="validateTimezone"
+                ></v-text-field>
               </v-list-item>
             </v-card>
           </v-list-item>
@@ -92,6 +115,18 @@
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="nextDialog = false">back</v-btn>
               <v-btn color="green darken-1" text @click="sendRequest">Confirm</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="resultDialog" max-width="400">
+          <v-card>
+            <v-card-title v-if="!results" class="headline justify-center">Loading results...</v-card-title>
+            <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
+            <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="cancelResults">Cancel</v-btn>
+              <v-btn v-if="results" color="green darken-1" text @click="showResults">Show results</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -137,11 +172,15 @@ export default {
     return {
       search: "",
       drawer: null,
+      results: null,
       backDialog: false,
       nextDialog: false,
+      resultDialog: false,
       groupSizeType: "Fixed",
+      timeZoneType: "Same",
       studentAmount: this.data.length,
-      fixedGroupSize: 1,
+      fixedGroupSize: 2,
+      timeZoneDiff: 1,
       variableGroupRange: [2, 6],
       groupSizeLowerBound: 1,
       groupSizeUpperBound: 6
@@ -152,38 +191,60 @@ export default {
       this.$emit("back");
     },
     sendRequest() {
-      const filters = this.generateFilters()
+      this.results = null;
+      const display = this;
+      const filters = this.generateFilters();
       const requestData = {
         filters: filters,
         students: this.data
-      }
-      const xml = new XMLHttpRequest()
-      xml.open("POST", "https://organiser-app.herokuapp.com/allocateGroups", true)
+      };
+      const xml = new XMLHttpRequest();
+      xml.open(
+        "POST",
+        "https://organiser-app.herokuapp.com/allocateGroups",
+        true
+      );
       xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xml.onreadystatechange = () => {
-        if (this.readyState == 4 && this.status == 200) {
-          console.log(xml.responseText)
-        } else {
-          console.log("failed")
-          console.log(xml.responseText)
+        if (xml.readyState == 4) {
+          if (xml.status == 200) {
+            display.results = JSON.parse(xml.responseText);
+          } else {
+            console.log(xml.status)
+            console.log(xml.responseText)
+          }
         }
-      }
+      };
+      console.log(filters)
       xml.send(JSON.stringify(requestData));
+      this.nextDialog = false;
+      this.resultDialog = true;
+    },
+    cancelResults() {
+      this.resultDialog = false;
+    },
+    showResults() {
+      this.$emit('results', this.results)
     },
     generateFilters() {
-      const filters = {}
+      const filters = {};
       if (this.groupSizeType == "Fixed") {
-        filters.groupSizeLowerBound = this.fixedGroupSize
-        filters.groupSizeUpperBound = this.fixedGroupSize
+        filters.groupSizeLowerBound = this.fixedGroupSize;
+        filters.groupSizeUpperBound = this.fixedGroupSize;
       } else {
-        filters.groupSizeLowerBound = this.groupSizeLowerBound
-        filters.groupSizeUpperBound = this.groupSizeUpperBound
+        filters.groupSizeLowerBound = this.groupSizeLowerBound;
+        filters.groupSizeUpperBound = this.groupSizeUpperBound;
       }
-      return filters
+      if (this.timeZoneType == "Same") {
+        filters.timeZoneDiff = 0
+      } else {
+        filters.timeZoneDiff = this.timeZoneDiff
+      }
+      return filters;
     },
     validateGroupSize() {
-      if (this.fixedGroupSize <= 0) {
-        this.fixedGroupSize = 1;
+      if (this.fixedGroupSize <= 1) {
+        this.fixedGroupSize = 2;
       }
       if (this.fixedGroupSize >= this.studentAmount) {
         this.fixedGroupSize = this.studentAmount - 1;
@@ -191,34 +252,42 @@ export default {
     },
     validateGroupLowerBound() {
       if (this.groupSizeLowerBound <= 0) {
-        this.groupSizeLowerBound = 1
+        this.groupSizeLowerBound = 1;
       }
       if (this.groupSizeLowerBound >= this.groupSizeUpperBound) {
-        this.groupSizeLowerBound = this.groupSizeUpperBound - 1
+        this.groupSizeLowerBound = this.groupSizeUpperBound - 1;
       }
       if (this.groupSizeLowerBound >= this.studentAmount - 1) {
-        this.groupSizeLowerBound = this.studentAmount - 2
+        this.groupSizeLowerBound = this.studentAmount - 2;
       }
-      this.validateGroupRange()
+      this.validateGroupRange();
     },
     validateGroupUpperBound() {
       if (this.groupSizeUpperBound <= 0) {
-        this.groupSizeUpperBound = 2
+        this.groupSizeUpperBound = 2;
       }
       if (this.groupSizeUpperBound <= this.groupSizeLowerBound) {
-        this.groupSizeUpperBound = this.groupSizeLowerBound + 1
+        this.groupSizeUpperBound = this.groupSizeLowerBound + 1;
       }
       if (this.groupSizeUpperBound >= this.studentAmount) {
-        this.groupSizeUpperBound = this.studentAmount - 1
+        this.groupSizeUpperBound = this.studentAmount - 1;
       }
-      this.validateGroupRange
+      this.validateGroupRange;
     },
     validateGroupRange() {
       if (this.variableGroupRange[0] < this.groupSizeLowerBound) {
-        this.variableGroupRange[0] = this.groupSizeLowerBound
+        this.variableGroupRange[0] = this.groupSizeLowerBound;
       }
       if (this.variableGroupRange[1] > this.groupSizeUpperBound) {
-        this.variableGroupRange[1] = this.groupSizeUpperBound
+        this.variableGroupRange[1] = this.groupSizeUpperBound;
+      }
+    },
+    validateTimezone() {
+      if (this.timeZoneDiff < 0) {
+        this.timeZoneDiff = 0
+      }
+      if (this.timeZoneDiff > 24) {
+        this.timeZoneDiff = 24
       }
     }
   }
