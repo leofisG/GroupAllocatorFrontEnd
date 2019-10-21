@@ -28,6 +28,11 @@ export function parse(file, event) {
     })
 }
 
+export function generate(results) {
+    const csv = Papa.unparse(results.students)
+    return new Blob([csv], {type: "text/csv;charset=utf-8"})
+}
+
 function furtherParse(data, event) {
     var attributeList = Array.from(translationMap.keys());
     var res = []
