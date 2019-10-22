@@ -1,7 +1,7 @@
 <template>
   <div class="display">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped>
+      <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense class="fill-height">
             <v-list-item class="pa-2 ma-2" style="background-color: #FFBABA;" @click.stop="backDialog = true">
             <v-list-item-action>
@@ -22,87 +22,15 @@
               </v-card>
             </v-dialog>
           </v-list-item>
-          <v-list-item class="pa-2">
-            <v-card width="100%">
-              <v-card-title class="justify-center">Group size</v-card-title>
-              <v-list-item>
-                <v-select
-                  v-model="groupSizeType"
-                  :items="['Fixed', 'Variable']"
-                  label="Filter type"
-                ></v-select>
-              </v-list-item>
-              <v-list-item>
-                <v-text-field
-                  v-if="groupSizeType == &quot;Fixed&quot;"
-                  type="number"
-                  min="1"
-                  label="Group size"
-                  clearable
-                  v-model="fixedGroupSize"
-                  @change="validateGroupSize"
-                ></v-text-field>
-                <v-range-slider
-                  v-if="groupSizeType != &quot;Fixed&quot;"
-                  v-model="variableGroupRange"
-                  :max="groupSizeUpperBound"
-                  :min="groupSizeLowerBound"
-                  :thumb-size="24"
-                  thumb-label="always"
-                >
-                  <template v-slot:prepend>
-                    <v-text-field
-                      @change="validateGroupLowerBound"
-                      v-model="groupSizeLowerBound"
-                      class="mt-0 pt-0"
-                      hide-details
-                      single-line
-                      type="number"
-                      style="width: 50px"
-                    ></v-text-field>
-                  </template>
-                  <template v-slot:append>
-                    <v-text-field
-                      @change="validateGroupUpperBound"
-                      v-model="groupSizeUpperBound"
-                      class="mt-0 pt-0"
-                      hide-details
-                      single-line
-                      type="number"
-                      style="width: 50px"
-                    ></v-text-field>
-                  </template>
-                </v-range-slider>
-              </v-list-item>
-            </v-card>
-          </v-list-item>
-          <v-list-item  class="pa-2">
-            <v-card width="100%">
-              <v-card-title class="justify-center">Timezones</v-card-title>
-              <v-list-item>
-                <v-select
-                  v-model="timeZoneType"
-                  :items="['Same', 'Different']"
-                  label="Filter type"
-                ></v-select>
-              </v-list-item>
-              <v-list-item>
-                <v-text-field
-                  v-if="timeZoneType == &quot;Different&quot;"
-                  type="number"
-                  min="0"
-                  label="Timezone difference"
-                  clearable
-                  v-model="timeZoneDiff"
-                  @change="validateTimezone"
-                ></v-text-field>
-              </v-list-item>
-            </v-card>
-          </v-list-item>
         </v-list>
+        <Filters
+          v-bind:studentAmount="studentAmount"
+          v-bind:student="data[0]"
+          @update="updateFilters"
+        ></Filters>
       </v-navigation-drawer>
 
-      <v-app-bar app clipped-left>
+      <v-app-bar app fixed clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
         <v-spacer></v-spacer>
@@ -163,6 +91,8 @@
 </template>
 
 <script>
+import Filters from "./Filters";
+
 export default {
   name: "display",
   data: function() {
@@ -173,15 +103,12 @@ export default {
       backDialog: false,
       nextDialog: false,
       resultDialog: false,
-      groupSizeType: "Fixed",
-      timeZoneType: "Same",
-      studentAmount: this.$root.data.length,
-      fixedGroupSize: 2,
-      timeZoneDiff: 1,
-      variableGroupRange: [2, 6],
-      groupSizeLowerBound: 1,
-      groupSizeUpperBound: 6
+      studentAmount: this.data.length,
+      filters: {}
     };
+  },
+  components: {
+    Filters
   },
   methods: {
     goBack() {
@@ -190,9 +117,8 @@ export default {
     sendRequest() {
       this.results = null;
       const display = this;
-      const filters = this.generateFilters();
       const requestData = {
-        filters: filters,
+        filters: this.filters,
         students: this.$root.data
       };
       const xml = new XMLHttpRequest();
@@ -227,69 +153,8 @@ export default {
       this.$root.results = this.results
       this.$router.push({path: "display-groups"})
     },
-    generateFilters() {
-      const filters = {};
-      if (this.groupSizeType == "Fixed") {
-        filters.groupSizeLowerBound = this.fixedGroupSize;
-        filters.groupSizeUpperBound = this.fixedGroupSize;
-      } else {
-        filters.groupSizeLowerBound = this.groupSizeLowerBound;
-        filters.groupSizeUpperBound = this.groupSizeUpperBound;
-      }
-      if (this.timeZoneType == "Same") {
-        filters.timeZoneDiff = 0
-      } else {
-        filters.timeZoneDiff = this.timeZoneDiff
-      }
-      return filters;
-    },
-    validateGroupSize() {
-      if (this.fixedGroupSize <= 1) {
-        this.fixedGroupSize = 2;
-      }
-      if (this.fixedGroupSize >= this.studentAmount) {
-        this.fixedGroupSize = this.studentAmount - 1;
-      }
-    },
-    validateGroupLowerBound() {
-      if (this.groupSizeLowerBound <= 0) {
-        this.groupSizeLowerBound = 1;
-      }
-      if (this.groupSizeLowerBound >= this.groupSizeUpperBound) {
-        this.groupSizeLowerBound = this.groupSizeUpperBound - 1;
-      }
-      if (this.groupSizeLowerBound >= this.studentAmount - 1) {
-        this.groupSizeLowerBound = this.studentAmount - 2;
-      }
-      this.validateGroupRange();
-    },
-    validateGroupUpperBound() {
-      if (this.groupSizeUpperBound <= 0) {
-        this.groupSizeUpperBound = 2;
-      }
-      if (this.groupSizeUpperBound <= this.groupSizeLowerBound) {
-        this.groupSizeUpperBound = this.groupSizeLowerBound + 1;
-      }
-      if (this.groupSizeUpperBound >= this.studentAmount) {
-        this.groupSizeUpperBound = this.studentAmount - 1;
-      }
-      this.validateGroupRange;
-    },
-    validateGroupRange() {
-      if (this.variableGroupRange[0] < this.groupSizeLowerBound) {
-        this.variableGroupRange[0] = this.groupSizeLowerBound;
-      }
-      if (this.variableGroupRange[1] > this.groupSizeUpperBound) {
-        this.variableGroupRange[1] = this.groupSizeUpperBound;
-      }
-    },
-    validateTimezone() {
-      if (this.timeZoneDiff < 0) {
-        this.timeZoneDiff = 0
-      }
-      if (this.timeZoneDiff > 24) {
-        this.timeZoneDiff = 24
-      }
+    updateFilters(newFilters) {
+      this.filters = newFilters;
     }
   }
 };

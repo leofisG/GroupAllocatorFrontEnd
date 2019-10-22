@@ -2,6 +2,9 @@ import Papa from 'papaparse'
 
 
 var translationMap = new Map([
+    ["First name", "firstName"],
+    ["Last name", "lastName"],
+    ["Age", "age"],
     ["CID", "id"],
     ["Country", "country"],
     ["Gender", "gender"],
