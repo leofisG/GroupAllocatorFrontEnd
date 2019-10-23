@@ -1,23 +1,23 @@
 <template>
   <v-card width="100%">
     <v-card-title class="justify-center">
-      Timezones
+      Ages
       <v-btn @click="this.remove" absolute right fab dark x-small>
         <v-icon dark>mdi-minus</v-icon>
       </v-btn>
     </v-card-title>
     <v-list-item>
-      <v-select v-model="timeZoneType" :items="['Same', 'Different']" label="Filter type"></v-select>
+      <v-select v-model="ageType" :items="['Same', 'Different']" label="Filter type"></v-select>
     </v-list-item>
     <v-list-item>
       <v-text-field
-        v-if="timeZoneType == &quot;Different&quot;"
+        v-if="ageType == &quot;Different&quot;"
         type="number"
         min="0"
-        label="Timezone difference"
+        label="Age difference"
         clearable
-        v-model="timeZoneDiff"
-        @change="validateTimezone"
+        v-model="ageDiff"
+        @change="validateAge"
       ></v-text-field>
     </v-list-item>
   </v-card>
@@ -25,47 +25,47 @@
 
 <script>
 export default {
-  name: "timezonefilter",
+  name: "agefilter",
   data: function() {
     return {
-      timeZoneType: "Same",
-      timeZoneDiff: 1
+      ageType: "Same",
+      ageDiff: 1
     };
   },
   watch: {
-    timeZoneType: function() {
-      this.updateFilters()
+    ageType: function() {
+        this.updateFilters()
     },
-    timeZoneDiff: function() {
-      this.updateFilters()
+    ageDiff: function() {
+      this.updateFilters();
     }
   },
   mounted: function() {
     this.updateFilters();
   },
   methods: {
-    validateTimezone() {
-      if (this.timeZoneDiff < 0) {
-        this.timeZoneDiff = 0;
+    validateAge() {
+      if (this.ageDiff < 0) {
+        this.ageDiff = 0;
       }
-      if (this.timeZoneDiff > 24) {
-        this.timeZoneDiff = 24;
+      if (this.ageDiff > 70) {
+        this.ageDiff = 70;
       }
     },
     remove() {
       this.$emit("remove", {
-        type: "TimeZoneFilter",
-        values: ["timeZoneDiff"]
+        type: "AgeFilter",
+        values: ["ageDiff"]
       });
     },
     updateFilters() {
       const values =
-        this.timeZoneType == "Same"
+        this.ageType == "Same"
           ? {
-              timeZoneDiff: 0
+              ageDiff: 0
             }
           : {
-              timeZoneDiff: this.timeZoneDiff
+              ageDiff: this.ageDiff
             };
       this.$emit("update", values);
     }

@@ -55,13 +55,24 @@ export default {
   props: {
     studentAmount: Number
   },
+  watch: {
+    groupSizeType: function() {
+      this.updateFilters();
+    },
+    fixedGroupSize: function() {
+      this.updateFilters();
+    },
+    variableGroupRange: function() {
+      this.updateFilters();
+    }
+  },
   data: function() {
     return {
       groupSizeType: "Fixed",
       fixedGroupSize: 2,
       variableGroupRange: [2, 6],
       groupSizeLowerBound: 1,
-      groupSizeUpperBound: 6
+      groupSizeUpperBound: 6,
     };
   },
   mounted: function() {
@@ -75,7 +86,6 @@ export default {
       if (this.fixedGroupSize >= this.studentAmount) {
         this.fixedGroupSize = this.studentAmount - 1;
       }
-      this.updateFilters();
     },
     validateGroupLowerBound() {
       if (this.groupSizeLowerBound <= 0) {
@@ -103,18 +113,25 @@ export default {
     },
     validateGroupRange() {
       if (this.variableGroupRange[0] < this.groupSizeLowerBound) {
-        this.variableGroupRange[0] = this.groupSizeLowerBound;
+        this.$set(this.variableGroupRange, 0, this.groupSizeLowerBound)
       }
       if (this.variableGroupRange[1] > this.groupSizeUpperBound) {
-        this.variableGroupRange[1] = this.groupSizeUpperBound;
+        this.$set(this.variableGroupRange, 1, this.groupSizeUpperBound)
       }
-      this.updateFilters();
+      this.$forceUpdate();
     },
     updateFilters() {
-      this.$emit("update", {
-        ...this.groupSizeLowerBound,
-        ...this.groupSizeUpperBound
-      });
+      const values =
+        this.groupSizeType == "Fixed"
+          ? {
+              groupSizeLowerBound: this.fixedGroupSize,
+              groupSizeUpperBound: this.fixedGroupSize
+            }
+          : {
+              groupSizeLowerBound: this.variableGroupRange[0],
+              groupSizeUpperBound: this.variableGroupRange[1]
+            };
+      this.$emit("update", values);
     }
   }
 };

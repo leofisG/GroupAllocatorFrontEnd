@@ -2,7 +2,7 @@
   <div class="display">
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
-        <v-list dense class="fill-height">
+        <v-list dense>
             <v-list-item class="pa-2 ma-2" style="background-color: #FFBABA;" @click.stop="backDialog = true">
             <v-list-item-action>
               <v-icon>mdi-arrow-left-bold</v-icon>
@@ -25,7 +25,7 @@
         </v-list>
         <Filters
           v-bind:studentAmount="studentAmount"
-          v-bind:student="data[0]"
+          v-bind:student="this.$root.data[0]"
           @update="updateFilters"
         ></Filters>
       </v-navigation-drawer>
@@ -50,6 +50,7 @@
           <v-card>
             <v-card-title v-if="!results" class="headline justify-center">Loading results...</v-card-title>
             <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
+            <v-card-text v-if="results">{{ allocationMessage }}</v-card-text>
             <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -103,8 +104,9 @@ export default {
       backDialog: false,
       nextDialog: false,
       resultDialog: false,
-      studentAmount: this.data.length,
-      filters: {}
+      studentAmount: this.$root.data.length,
+      filters: {},
+      allocationMessage: ""
     };
   },
   components: {
@@ -117,8 +119,9 @@ export default {
     sendRequest() {
       this.results = null;
       const display = this;
+      const filters = this.filters;
       const requestData = {
-        filters: this.filters,
+        filters: filters,
         students: this.$root.data
       };
       const xml = new XMLHttpRequest();
@@ -131,7 +134,9 @@ export default {
       xml.onreadystatechange = () => {
         if (xml.readyState == 4) {
           if (xml.status == 200) {
-            display.results = JSON.parse(xml.responseText);
+            const response = JSON.parse(xml.responseText)
+            display.allocationMessage = display.generateResultMessage(response);
+            display.results = response;
           } else {
             // eslint-disable-next-line
             console.log(xml.status)
@@ -155,6 +160,16 @@ export default {
     },
     updateFilters(newFilters) {
       this.filters = newFilters;
+    },
+    generateResultMessage(response) {
+      var message = `${response.numOfGroup} groups allocated`
+      if (response.numOfUnalloc == 1) {
+        message += ", 1 student could not be allocated"
+      } else if (response.numOfUnalloc > 1) {
+        message += `, ${response.numOfUnalloc} students could not be allocated`
+      }
+      message += "."
+      return message;
     }
   }
 };
