@@ -52,10 +52,9 @@ function furtherParse(data, event) {
     });
     // eslint-disable-next-line no-console
     console.log(res[0]);
-    event.$emit('parsed', {
-        data: res,
-        headers: headers
-    })
+    event.$root.data = res;
+    event.$root.headers = headers;
+    event.$router.push({path: "display-students"})
 }
 
 function headerExists(headers, attribute) {

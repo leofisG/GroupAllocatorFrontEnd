@@ -1,30 +1,10 @@
 <template>
   <div id="app">
-    <transition name="fade">
-      <UploadCSV v-if="!uploaded" @parsed="setData"></UploadCSV>
-    </transition>
-
-    <transition name="fade">
-      <DisplayStudents
-        v-if="uploaded && !allocated"
-        v-bind:data="data"
-        v-bind:headers="headers"
-        @back="resetDisplay"
-        @results="setResults"
-      ></DisplayStudents>
-    </transition>
-
-    <transition name="fade">
-      <DisplayGroups v-if="allocated" v-bind:results="results" @back="resetGroups"></DisplayGroups>
-    </transition>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import UploadCSV from "./components/UploadCSV.vue";
-import DisplayStudents from "./components/DisplayStudents.vue";
-import DisplayGroups from "./components/DisplayGroups.vue";
-
 export default {
   name: "app",
   data: function() {
@@ -37,14 +17,6 @@ export default {
     };
   },
   methods: {
-    setData(result) {
-      this.data = result.data;
-      this.headers = result.headers;
-      this.uploaded = true;
-    },
-    resetDisplay() {
-      this.uploaded = false;
-    },
     setResults(result) {
       this.results = result;
       this.allocated = true;
@@ -53,11 +25,6 @@ export default {
       this.results = null;
       this.allocated = false;
     }
-  },
-  components: {
-    UploadCSV,
-    DisplayStudents,
-    DisplayGroups
   },
   created() {
     document.title = "Student allocator";

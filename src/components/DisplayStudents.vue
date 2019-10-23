@@ -1,7 +1,7 @@
 <template>
   <div class="display">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="325">
+      <v-navigation-drawer v-model="drawer" app clipped>
         <v-list dense class="fill-height">
             <v-list-item class="pa-2 ma-2" style="background-color: #FFBABA;" @click.stop="backDialog = true">
             <v-list-item-action>
@@ -131,6 +131,7 @@
           </v-card>
         </v-dialog>
       </v-app-bar>
+
       <v-content>
         <v-container class="fill-height" fluid>
           <v-row class="fill-height" align="start" justify="center">
@@ -142,8 +143,8 @@
                   <v-text-field v-model="search" label="Search" single-line hide-details></v-text-field>
                 </v-card-title>
                 <v-data-table
-                  :headers="headers"
-                  :items="data"
+                  :headers="this.$root.headers"
+                  :items="this.$root.data"
                   :footer-props="{
                      'items-per-page-options': [20, 50, 100, -1]
                   }"
@@ -164,10 +165,6 @@
 <script>
 export default {
   name: "display",
-  props: {
-    data: Array,
-    headers: Array
-  },
   data: function() {
     return {
       search: "",
@@ -178,7 +175,7 @@ export default {
       resultDialog: false,
       groupSizeType: "Fixed",
       timeZoneType: "Same",
-      studentAmount: this.data.length,
+      studentAmount: this.$root.data.length,
       fixedGroupSize: 2,
       timeZoneDiff: 1,
       variableGroupRange: [2, 6],
@@ -188,7 +185,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$emit("back");
+      this.$router.push({path: '/'})
     },
     sendRequest() {
       this.results = null;
@@ -196,7 +193,7 @@ export default {
       const filters = this.generateFilters();
       const requestData = {
         filters: filters,
-        students: this.data
+        students: this.$root.data
       };
       const xml = new XMLHttpRequest();
       xml.open(
@@ -210,11 +207,14 @@ export default {
           if (xml.status == 200) {
             display.results = JSON.parse(xml.responseText);
           } else {
+            // eslint-disable-next-line
             console.log(xml.status)
+            // eslint-disable-next-line
             console.log(xml.responseText)
           }
         }
       };
+      // eslint-disable-next-line
       console.log(filters)
       xml.send(JSON.stringify(requestData));
       this.nextDialog = false;
@@ -224,7 +224,8 @@ export default {
       this.resultDialog = false;
     },
     showResults() {
-      this.$emit('results', this.results)
+      this.$root.results = this.results
+      this.$router.push({path: "display-groups"})
     },
     generateFilters() {
       const filters = {};

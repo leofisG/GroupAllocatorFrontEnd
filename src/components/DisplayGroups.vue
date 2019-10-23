@@ -77,9 +77,6 @@ import saveAs from "file-saver";
 
 export default {
   name: "groupings",
-  props: {
-    results: Object
-  },
   data: function() {
     return {
       search: "",
@@ -116,15 +113,15 @@ export default {
   },
   methods: {
     goBack() {
-      this.$emit("back");
+      this.$router.push({path: "display-students"})
     },
     generateCSV() {
-      const blob = generate(this.results);
+      const blob = generate(this.$root.results);
       saveAs(blob, "results.csv");
       this.csvDialog = false;
     },
     generateGroups() {
-      const students = this.results.students;
+      const students = this.$root.results.students;
       const amount = students[students.length - 1].groupId;
       const unallocated = [];
       const groups = [];
