@@ -9,9 +9,8 @@
     <v-list-item>
       <v-select v-model="timeZoneType" :items="['Same', 'Different']" label="Filter type"></v-select>
     </v-list-item>
-    <v-list-item>
+    <v-list-item v-if="timeZoneType == &quot;Different&quot;">
       <v-text-field
-        v-if="timeZoneType == &quot;Different&quot;"
         type="number"
         min="0"
         label="Timezone difference"
@@ -45,8 +44,8 @@ export default {
   },
   methods: {
     validateTimezone() {
-      if (this.timeZoneDiff < 0) {
-        this.timeZoneDiff = 0;
+      if (this.timeZoneDiff < 1) {
+        this.timeZoneDiff = 1;
       }
       if (this.timeZoneDiff > 24) {
         this.timeZoneDiff = 24;

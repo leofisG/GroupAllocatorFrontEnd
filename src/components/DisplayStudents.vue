@@ -3,7 +3,11 @@
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense>
-            <v-list-item class="pa-2 ma-2" style="background-color: #FFBABA;" @click.stop="backDialog = true">
+          <v-list-item
+            class="pa-2 ma-2"
+            style="background-color: #FFBABA;"
+            @click.stop="backDialog = true"
+          >
             <v-list-item-action>
               <v-icon>mdi-arrow-left-bold</v-icon>
             </v-list-item-action>
@@ -27,6 +31,8 @@
           v-bind:studentAmount="studentAmount"
           v-bind:student="this.$root.data[0]"
           @update="updateFilters"
+          @warn="warnUser"
+          @unwarn="unwarnUser"
         ></Filters>
       </v-navigation-drawer>
 
@@ -34,7 +40,22 @@
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn color="green darken-1" justify-end @click="nextDialog = true">Submit allocation</v-btn>
+        <v-btn color="green darken-1" justify-end @click="checkSubmission">Submit allocation</v-btn>
+        <v-dialog v-model="warningDialog" max-width="400">
+          <v-card>
+            <v-card-title class="headline justify-center">Error in filters!</v-card-title>
+            <v-card-text>Please correct errors in the following filters:</v-card-text>
+            <v-list>
+              <v-list-item v-for="warning in warnings" :key=warning :v-bind:warning="warning">
+                {{warning}}
+              </v-list-item>
+            </v-list>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="warningDialog = false">back</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-dialog v-model="nextDialog" max-width="400">
           <v-card>
             <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
@@ -102,11 +123,13 @@ export default {
       drawer: null,
       results: null,
       backDialog: false,
+      warningDialog: false,
       nextDialog: false,
       resultDialog: false,
       studentAmount: this.$root.data.length,
       filters: {},
-      allocationMessage: ""
+      allocationMessage: "",
+      warnings: []
     };
   },
   components: {
@@ -114,7 +137,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push({path: '/'})
+      this.$router.push({ path: "/" });
     },
     sendRequest() {
       this.results = null;
@@ -134,19 +157,19 @@ export default {
       xml.onreadystatechange = () => {
         if (xml.readyState == 4) {
           if (xml.status == 200) {
-            const response = JSON.parse(xml.responseText)
+            const response = JSON.parse(xml.responseText);
             display.allocationMessage = display.generateResultMessage(response);
             display.results = response;
           } else {
             // eslint-disable-next-line
-            console.log(xml.status)
+            console.log(xml.status);
             // eslint-disable-next-line
-            console.log(xml.responseText)
+            console.log(xml.responseText);
           }
         }
       };
       // eslint-disable-next-line
-      console.log(filters)
+      console.log(filters);
       xml.send(JSON.stringify(requestData));
       this.nextDialog = false;
       this.resultDialog = true;
@@ -155,21 +178,37 @@ export default {
       this.resultDialog = false;
     },
     showResults() {
-      this.$root.results = this.results
-      this.$router.push({path: "display-groups"})
+      this.$root.results = this.results;
+      this.$router.push({ path: "display-groups" });
     },
     updateFilters(newFilters) {
       this.filters = newFilters;
     },
     generateResultMessage(response) {
-      var message = `${response.numOfGroup} groups allocated`
+      var message = `${response.numOfGroup} groups allocated`;
       if (response.numOfUnalloc == 1) {
-        message += ", 1 student could not be allocated"
+        message += ", 1 student could not be allocated";
       } else if (response.numOfUnalloc > 1) {
-        message += `, ${response.numOfUnalloc} students could not be allocated`
+        message += `, ${response.numOfUnalloc} students could not be allocated`;
       }
-      message += "."
+      message += ".";
       return message;
+    },
+    warnUser(filterName) {
+      console.log(filterName)
+      if (!this.warnings.includes(filterName)) {
+        this.warnings.push(filterName);
+      }
+    },
+    unwarnUser(filterName) {
+      this.warnings = this.warnings.filter(e => e != filterName);
+    },
+    checkSubmission() {
+      if (this.warnings.length > 0) {
+        this.warningDialog = true;
+      } else {
+        this.nextDialog = true;
+      }
     }
   }
 };

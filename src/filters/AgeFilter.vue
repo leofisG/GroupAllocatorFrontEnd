@@ -9,9 +9,8 @@
     <v-list-item>
       <v-select v-model="ageType" :items="['Same', 'Different']" label="Filter type"></v-select>
     </v-list-item>
-    <v-list-item>
+    <v-list-item v-if="ageType == &quot;Different&quot;">
       <v-text-field
-        v-if="ageType == &quot;Different&quot;"
         type="number"
         min="0"
         label="Age difference"
@@ -45,8 +44,8 @@ export default {
   },
   methods: {
     validateAge() {
-      if (this.ageDiff < 0) {
-        this.ageDiff = 0;
+      if (this.ageDiff < 1) {
+        this.ageDiff = 1;
       }
       if (this.ageDiff > 70) {
         this.ageDiff = 70;

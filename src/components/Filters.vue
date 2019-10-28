@@ -9,8 +9,12 @@
       <component
         v-if="openFilters.includes(filter)"
         :is="filter.type"
+        v-bind:filters="filters"
         @remove="removeFilter"
         @update="updateFilter"
+        @removeValues="removeFromFilters"
+        @warn="warnUser"
+        @unwarn="unwarnUser"
       />
     </v-list-item>
     <v-menu v-if="availableFilters.length > 0" offset-y close-on-content-click>
@@ -67,7 +71,8 @@ export default {
           name: "Gender"
         }
       ],
-      filters: {}
+      filters: {},
+      info: {}
     };
   },
   methods: {
@@ -93,6 +98,12 @@ export default {
         delete this.filters[value];
       }
       this.updateFilters();
+    },
+    warnUser(filterName) {
+      this.$emit('warn', filterName)
+    },
+    unwarnUser(filterName) {
+      this.$emit('unwarn', filterName)
     }
   },
   components: {
