@@ -27,7 +27,7 @@
             </v-dialog>
           </v-list-item>
         </v-list>
-        <v-list>
+        <v-list v-if="unallocated.length > 0">
             <v-subheader>Unallocated students</v-subheader>
             <v-list-item v-for="student in unallocated" :key="student.id">CID: {{student.id}}</v-list-item>
         </v-list>
