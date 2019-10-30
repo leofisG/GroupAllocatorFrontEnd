@@ -52,17 +52,17 @@
       <v-content>
         <v-container class="fill-height" fluid>
           <v-row class="fill-height" align="start" justify="center">
-            <v-col>
-              <v-card height="100%">
-                  <v-list flat>
-                      <v-list-item v-for="(group, index) in groups" :key="index" :group="group" :index="index">
-                          <v-list-item-content>
-                              <v-list-item-title>Group {{index + 1}}</v-list-item-title>
-                              <v-list-item-subtitle v-for="student in group" :key="student.id" :student="student">CID: {{ student.id }}</v-list-item-subtitle>
-                          </v-list-item-content>
-                      </v-list-item>
-                  </v-list>
-              </v-card>
+            <v-col cols="12" sm="6" md="4" v-for="(group, index) in groups" :key="index" :group="group" :index="index">
+                <v-card height="100%">
+                    <v-list flat>
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
+                                <v-list-item-subtitle v-for="student in group" :key="student.id" :student="student">CID: {{ student.id }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
             </v-col>
           </v-row>
         </v-container>

@@ -69,7 +69,7 @@
         </v-dialog>
         <v-dialog v-model="resultDialog" max-width="400">
           <v-card>
-            <v-card-title v-if="!results" class="headline justify-center">Loading results...</v-card-title>
+            <v-card-title v-if="!results" class="headline justify-center">Generating Group Allocation...</v-card-title>
             <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
             <v-card-text v-if="results">{{ allocationMessage }}</v-card-text>
             <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
@@ -195,6 +195,7 @@ export default {
       return message;
     },
     warnUser(filterName) {
+      // eslint-disable-next-line
       console.log(filterName)
       if (!this.warnings.includes(filterName)) {
         this.warnings.push(filterName);
