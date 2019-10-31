@@ -7,7 +7,7 @@ import DisplayGroups from "./components/DisplayGroups.vue";
 Vue.use(Router)
 
 export default new Router({
-  // Set the mode to histroy so we remove the hashtag in the URL.
+  // Set the mode to history so we remove the hashtag in the URL.
   mode: 'history',
   routes: [
     {
@@ -20,8 +20,12 @@ export default new Router({
         name: 'DisplayStudents',
         component: DisplayStudents,
         beforeEnter: (to, from, next) => {
+            if (from.name == 'UploadCSV') {
+                next()
+            } else {
+                next({ name: 'UploadCSV' })
+            }
             // TODO: check whether there is students store in the $root. If not redirect.
-            next()
         }
     },
     {
@@ -29,8 +33,12 @@ export default new Router({
         name: 'DisplayGroups',
         component: DisplayGroups,
         beforeEnter: (to, from, next) => {
+            if (from.name == "DisplayStudents") {
+                next()
+            } else {
+                next({ name: 'UploadCSV' })
+            }
             // TODO: check whether there is results store in the $root. If not redirect.
-            next()
         }
     },
   ]

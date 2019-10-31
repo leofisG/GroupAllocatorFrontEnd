@@ -46,9 +46,11 @@
             <v-card-title class="headline justify-center">Error in filters!</v-card-title>
             <v-card-text>Please correct errors in the following filters:</v-card-text>
             <v-list>
-              <v-list-item v-for="warning in warnings" :key=warning :v-bind:warning="warning">
-                {{warning}}
-              </v-list-item>
+              <v-list-item
+                v-for="warning in warnings"
+                :key="warning"
+                :v-bind:warning="warning"
+              >{{warning}}</v-list-item>
             </v-list>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -69,7 +71,10 @@
         </v-dialog>
         <v-dialog v-model="resultDialog" max-width="400">
           <v-card>
-            <v-card-title v-if="!results" class="headline justify-center">Generating Group Allocation...</v-card-title>
+            <v-card-title
+              v-if="!results"
+              class="headline justify-center"
+            >Generating Group Allocation...</v-card-title>
             <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
             <v-card-text v-if="results">{{ allocationMessage }}</v-card-text>
             <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
@@ -77,6 +82,18 @@
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="cancelResults">Cancel</v-btn>
               <v-btn v-if="results" color="green darken-1" text @click="showResults">Show results</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="errorDialog" max-width="400">
+          <v-card>
+            <v-card-title class="headline justify-center">Server error occured!</v-card-title>
+            <v-card-text>Status: {{ error.status }}</v-card-text>
+            <v-card-text>Message: {{ error.message }}</v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="red" text @click="errorDialog = false">Cancel</v-btn>
+              <v-btn color="green darken-1" text @click="sendRequest">Try again</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -125,10 +142,12 @@ export default {
       backDialog: false,
       warningDialog: false,
       nextDialog: false,
+      errorDialog: false,
       resultDialog: false,
       studentAmount: this.$root.data.length,
       filters: {},
       allocationMessage: "",
+      error: {},
       warnings: []
     };
   },
@@ -140,6 +159,8 @@ export default {
       this.$router.push({ path: "/" });
     },
     sendRequest() {
+      this.errorDialog = false;
+      this.error = {};
       this.results = null;
       const display = this;
       const filters = this.filters;
@@ -164,7 +185,11 @@ export default {
             // eslint-disable-next-line
             console.log(xml.status);
             // eslint-disable-next-line
-            console.log(xml.responseText);
+            const error = JSON.parse(xml.responseText);
+            console.log(error);
+            display.error = error;
+            display.resultDialog = false;
+            display.errorDialog = true;
           }
         }
       };
@@ -178,8 +203,21 @@ export default {
       this.resultDialog = false;
     },
     showResults() {
+      this.combineResults();
       this.$root.results = this.results;
       this.$router.push({ path: "display-groups" });
+    },
+    combineResults() {
+      const results = this.results.students;
+      const students = this.$root.data;
+      const map = {};
+      for (const student of results) {
+        map[student.id] = student.groupId;
+      }
+      for (const student of students) {
+        student["groupId"] = map[student.id];
+      }
+      this.results.students = students;
     },
     updateFilters(newFilters) {
       this.filters = newFilters;
@@ -196,7 +234,7 @@ export default {
     },
     warnUser(filterName) {
       // eslint-disable-next-line
-      console.log(filterName)
+      console.log(filterName);
       if (!this.warnings.includes(filterName)) {
         this.warnings.push(filterName);
       }

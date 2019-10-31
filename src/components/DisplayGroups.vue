@@ -58,7 +58,7 @@
                         <v-list-item>
                             <v-list-item-content>
                                 <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
-                                <v-list-item-subtitle v-for="student in group" :key="student.id" :student="student">CID: {{ student.id }}</v-list-item-subtitle>
+                                <v-list-item-subtitle v-for="student in group" :key="student.id" :student="student">CID: {{ student.id }} Location: {{ student.country }}</v-list-item-subtitle>
                             </v-list-item-content>
                         </v-list-item>
                     </v-list>
@@ -122,7 +122,7 @@ export default {
     },
     generateGroups() {
       const students = this.$root.results.students;
-      const amount = students[students.length - 1].groupId;
+      const amount = this.$root.results.numOfGroup;
       const unallocated = [];
       const groups = [];
       for (var i = 0; i < amount; i++) {
