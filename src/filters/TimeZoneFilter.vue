@@ -15,7 +15,7 @@
         min="0"
         label="Timezone difference"
         clearable
-        v-model="timeZoneDiff"
+        v-model="timezoneDiff"
         @change="validateTimezone"
       ></v-text-field>
     </v-list-item>
@@ -28,14 +28,14 @@ export default {
   data: function() {
     return {
       timeZoneType: "Same",
-      timeZoneDiff: 1
+      timezoneDiff: 1
     };
   },
   watch: {
     timeZoneType: function() {
       this.updateFilters()
     },
-    timeZoneDiff: function() {
+    timezoneDiff: function() {
       this.updateFilters()
     }
   },
@@ -44,27 +44,27 @@ export default {
   },
   methods: {
     validateTimezone() {
-      if (this.timeZoneDiff < 1) {
-        this.timeZoneDiff = 1;
+      if (this.timezoneDiff < 1) {
+        this.timezoneDiff = 1;
       }
-      if (this.timeZoneDiff > 24) {
-        this.timeZoneDiff = 24;
+      if (this.timezoneDiff > 24) {
+        this.timezoneDiff = 24;
       }
     },
     remove() {
       this.$emit("remove", {
         type: "TimeZoneFilter",
-        values: ["timeZoneDiff"]
+        values: ["timezoneDiff"]
       });
     },
     updateFilters() {
       const values =
         this.timeZoneType == "Same"
           ? {
-              timeZoneDiff: 0
+              timezoneDiff: 0
             }
           : {
-              timeZoneDiff: this.timeZoneDiff
+              timezoneDiff: this.timezoneDiff
             };
       this.$emit("update", values);
     }
