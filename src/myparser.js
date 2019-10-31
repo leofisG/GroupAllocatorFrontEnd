@@ -1,5 +1,11 @@
 import Papa from 'papaparse'
 
+var requiredAttributes = new Map([
+    ["Age" , "30"],
+    ["Gender", "Male"],
+    ["Current City", "London"],
+    ["Country" , "United Kingdom"]
+])
 
 var translationMap = new Map([
     ["First name", "firstName"],
@@ -45,7 +51,11 @@ function furtherParse(data, event) {
         var attribute
         for (attribute in element) {
             if (attributeList.includes(attribute)) {
-                newElement[translationMap.get(attribute)] = element[attribute]
+                if (requiredAttributes.has(attribute) && element[attribute] == "") {
+                    newElement[translationMap.get(attribute)] = requiredAttributes.get(attribute)
+                } else {
+                    newElement[translationMap.get(attribute)] = element[attribute]
+                }
                 if (!headerExists(headers, attribute)) {
                     headers.push({ text: attribute, value: translationMap.get(attribute) })
                 }
