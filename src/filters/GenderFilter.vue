@@ -180,8 +180,8 @@ export default {
           values.genderErrorMargin = 0
           break;
         case "Ratio-based":
-          values.genderRatio = this.genderRatio
-          values.genderErrorMargin = this.genderErrorMargin
+          values.genderRatio = this.genderRatio / 100
+          values.genderErrorMargin = this.genderErrorMargin / 100
           break;
         default:
           values.minMale   = this.minMale

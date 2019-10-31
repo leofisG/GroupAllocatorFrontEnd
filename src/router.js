@@ -20,7 +20,7 @@ export default new Router({
         name: 'DisplayStudents',
         component: DisplayStudents,
         beforeEnter: (to, from, next) => {
-            if (from.name == 'UploadCSV') {
+            if (from.name == 'UploadCSV' || from.name == 'DisplayGroups') {
                 next()
             } else {
                 next({ name: 'UploadCSV' })

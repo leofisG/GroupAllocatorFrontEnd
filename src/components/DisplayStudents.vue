@@ -185,9 +185,16 @@ export default {
             // eslint-disable-next-line
             console.log(xml.status);
             // eslint-disable-next-line
-            const error = JSON.parse(xml.responseText);
-            console.log(error);
-            display.error = error;
+            if (xml.responseText) {
+              const error = JSON.parse(xml.responseText);
+              console.log(error);
+              display.error = error;
+            } else {
+              display.error = {
+                status: "Unknown",
+                message: "Request timed out"
+              }
+            }
             display.resultDialog = false;
             display.errorDialog = true;
           }
