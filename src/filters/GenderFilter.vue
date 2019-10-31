@@ -176,7 +176,7 @@ export default {
       const values = {}
       switch (this.genderType) {
         case "Same genders":
-          values.genderRatio = 100
+          values.genderRatio = 1
           values.genderErrorMargin = 0
           break;
         case "Ratio-based":
