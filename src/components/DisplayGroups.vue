@@ -28,8 +28,15 @@
           </v-list-item>
         </v-list>
         <v-list v-if="unallocated.length > 0">
-            <v-subheader>Unallocated students</v-subheader>
-            <v-list-item v-for="student in unallocated" :key="student.id">CID: {{student.id}}</v-list-item>
+          <v-subheader>Unallocated students</v-subheader>
+          <v-data-table
+                        dense
+                        :headers="headers"
+                        :items="unallocated"
+                        hide-default-footer
+                        item-key="id"
+                        class="elevation-1"
+                      ></v-data-table>
         </v-list>
       </v-navigation-drawer>
 
@@ -52,17 +59,32 @@
       <v-content>
         <v-container class="fill-height" fluid>
           <v-row class="fill-height" align="start" justify="center">
-            <v-col cols="12" sm="6" md="4" v-for="(group, index) in groups" :key="index" :group="group" :index="index">
-                <v-card height="100%">
-                    <v-list flat>
-                        <v-list-item>
-                            <v-list-item-content>
-                                <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
-                                <v-list-item-subtitle v-for="student in group" :key="student.id" :student="student">CID: {{ student.id }} Location: {{ student.country }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
+            <v-col
+              cols="12"
+              sm="6"
+              md="4"
+              v-for="(group, index) in groups"
+              :key="index"
+              :group="group"
+              :index="index"
+            >
+              <v-card height="100%">
+                <v-list flat>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
+                      <v-data-table
+                        dense
+                        :headers="headers"
+                        :items="group"
+                        hide-default-footer
+                        item-key="id"
+                        class="elevation-1"
+                      ></v-data-table>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-card>
             </v-col>
           </v-row>
         </v-container>
@@ -91,10 +113,16 @@ export default {
           value: "id"
         },
         {
-          text: "Group number",
-          align: "center",
-          value: "groupId",
-          filter: value => value != 0
+          text: "Gender",
+          value: "gender"
+        },
+        {
+          text: "Age",
+          value: "age"
+        },
+        {
+          text: "Country",
+          value: "country"
         }
       ],
       unAllocHeaders: [
@@ -113,7 +141,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push({path: "display-students"})
+      this.$router.push({ path: "display-students" });
     },
     generateCSV() {
       const blob = generate(this.$root.results);
@@ -126,7 +154,7 @@ export default {
       const unallocated = [];
       const groups = [];
       for (var i = 0; i < amount; i++) {
-          groups.push([])
+        groups.push([]);
       }
       for (const student of students) {
         if (student.groupId == 0) {
