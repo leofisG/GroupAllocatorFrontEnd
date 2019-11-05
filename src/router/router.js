@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import UploadCSV from "./components/UploadCSV.vue";
-import DisplayStudents from "./components/DisplayStudents.vue";
-import DisplayGroups from "./components/DisplayGroups.vue";
+// import store from '../store/store'
+import UploadCSV from "../components/UploadCSV.vue";
+import DisplayStudents from "../components/DisplayStudents.vue";
+import DisplayGroups from "../components/DisplayGroups.vue";
 
 Vue.use(Router)
 

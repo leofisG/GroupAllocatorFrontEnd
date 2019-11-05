@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import { generate } from "../myparser";
+import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
 
 export default {

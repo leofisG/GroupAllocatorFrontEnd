@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import store from '../../store/store'
 
 var requiredAttributes = new Map([
     ["Age" , "30"],
@@ -65,8 +66,8 @@ function furtherParse(data, event) {
     });
     // eslint-disable-next-line no-console
     console.log(res[0]);
-    event.$root.data = res;
-    event.$root.headers = headers;
+    store.commit('setParsedData', res);
+    store.commit('setParsedHeaders', headers);
     event.$router.push({path: "display-students"})
 }
 
