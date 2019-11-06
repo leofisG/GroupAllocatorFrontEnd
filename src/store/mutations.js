@@ -62,3 +62,7 @@ export const removeWarning = (state, warning) => {
 export const clearWarnings = state => {
     state.warnings = [];
 }
+
+export const updateDebugURL = (state, url) => {
+    state.debugURL = url;
+}

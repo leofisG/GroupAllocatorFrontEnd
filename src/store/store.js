@@ -6,7 +6,8 @@ import * as mutations from './mutations'
 Vue.use(Vuex)
 
 const state = {
-    URL: "https://organiser-app.herokuapp.com/allocateGroups",
+    debugURL: "",
+    productionURL: "https://organiser-app.herokuapp.com/allocateGroups",
     parsedStudents: null,
     parsedHeaders: null,
     filters: {},

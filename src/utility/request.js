@@ -6,10 +6,12 @@ const sendRequest = display => {
         filters: filters,
         students: store.state.parsedStudents
     };
+    // eslint-disable-next-line
+    console.log("Sending to URL " + store.getters.rightURL)
     const xml = new XMLHttpRequest();
     xml.open(
         "POST",
-        store.state.URL,
+        store.getters.rightURL,
         true
     );
     xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

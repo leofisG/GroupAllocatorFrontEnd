@@ -5,17 +5,13 @@
         <v-list dense>
           <v-list-item>
             <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
-            <v-dialog v-model="backDialog" max-width="450">
-              <v-card>
-                <v-card-title class="headline justify-center">Go back to the allocation screen?</v-card-title>
-                <v-card-text>Current groupings will be lost if you do!</v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="green darken-1" text @click="backDialog = false">Stay</v-btn>
-                  <v-btn color="red" text @click="goBack">Go back</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+            <back-dialog
+              v-if="backDialog"
+              @close="backDialog = false"
+              @back="goBack"
+              destination="the allocation screen"
+              lossWarning="Current groupings"
+            ></back-dialog>
           </v-list-item>
         </v-list>
         <v-list v-if="unallocated.length > 0">
@@ -87,9 +83,13 @@
 import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
 import { mapState } from "vuex";
+import backDialog from "../dialogs/backDialog";
 
 export default {
   name: "groupings",
+  components: {
+    "back-dialog": backDialog
+  },
   computed: {
     ...mapState(["results"])
   },
