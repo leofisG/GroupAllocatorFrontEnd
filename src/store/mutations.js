@@ -30,12 +30,10 @@ export const removeFromFilter = (state, values) => {
             Vue.delete(state.filters, value)
         }
     }
-    console.log(state.filters)
 }
 
 export const updateFilters = (state, values) => {
     state.filters = { ...state.filters, ...values }
-    console.log(state.filters)
 }
 
 export const addFilter = (state, filter) => {
@@ -50,12 +48,14 @@ export const removeFilter = (state, name) => {
 }
 
 export const addWarning = (state, warning) => {
+    console.log("Adding " + warning);
     if (!state.warnings.includes(warning)) {
         state.warnings.push(warning);
     }
 }
 
 export const removeWarning = (state, warning) => {
+    console.log("Removing " + warning);
     state.warnings = state.warnings.filter(e => e != warning)
 }
 
