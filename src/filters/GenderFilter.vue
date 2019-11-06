@@ -7,11 +7,7 @@
       </v-btn>
     </v-card-title>
     <v-list-item>
-      <v-select
-        v-model="currentType"
-        :items="genderTypes"
-        label="Filter type"
-      ></v-select>
+      <v-select v-model="currentType" :items="genderTypes" label="Filter type"></v-select>
     </v-list-item>
     <v-list-item v-if="currentType != &quot;Same genders&quot;">
       <v-slider
@@ -66,14 +62,14 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState } from "vuex";
 
 export default {
   name: "genderfilter",
   data: function() {
     return {
       currentType: "Same genders",
-      genderTypes: ['Same genders', 'Ratio-based', 'Minimum of each'],
+      genderTypes: ["Same genders", "Ratio-based", "Minimum of each"],
       genderRatio: 50,
       genderErrorMargin: 0,
       marginErrors: [],
@@ -140,8 +136,18 @@ export default {
     }
   },
   mounted: function() {
-    this.updateFilters();
-    this.genderErrorMargin = this.minRatio;
+    if ("genderRatio" in this.filters) {
+      this.currentType = "Ratio-based";
+      this.genderRatio = this.filters.genderRatio;
+      this.genderErrorMargin = this.filters.genderErrorMargin;
+    } else if ("minMale" in this.filters) {
+      this.currentType = "Minimum of each";
+      this.minMale = this.filters.minMale;
+      this.minFemale = this.filters.minFemale;
+    } else {
+      this.genderErrorMargin = this.minRatio;
+      this.updateFilters();
+    }
   },
   methods: {
     remove() {
@@ -149,15 +155,21 @@ export default {
       this.$store.commit("removeFilter", "GenderFilter");
     },
     checkMargin() {
-      if (!this.isMinRatio()) {
-        this.marginErrors = [`Your minimum ratio should be ${this.minRatio}`];
-        this.$store.commit("addWarning", "Gender");
-      } else if (!this.isMaxRatio()) {
-        this.marginErrors = [`Margin cannot be bigger than ${this.maxRatio}!`];
-        this.$store.commit("addWarning", "Gender");
-      } else {
-        this.marginErrors = [];
-        this.$store.commit("removeWarning", "Gender");
+      if (this.currentType == "Ratio-based") {
+        if (!this.isMinRatio()) {
+          this.marginErrors = [
+            `Your minimum margin should be ${this.minRatio}`
+          ];
+          this.$store.commit("addWarning", "Gender");
+        } else if (!this.isMaxRatio()) {
+          this.marginErrors = [
+            `Margin cannot be bigger than ${this.maxRatio}!`
+          ];
+          this.$store.commit("addWarning", "Gender");
+        } else {
+          this.marginErrors = [];
+          this.$store.commit("removeWarning", "Gender");
+        }
       }
       return true;
     },
@@ -168,6 +180,7 @@ export default {
       return this.genderErrorMargin <= this.maxRatio;
     },
     checkMin() {
+      console.log("in checkmin");
       if (this.checkMinVal) {
         this.$store.commit("addWarning", "Gender");
       } else {
@@ -192,6 +205,7 @@ export default {
       this.$store.commit("updateFilters", values);
     },
     updateWarning() {
+      console.log("In updateWarning");
       if (this.currentType == "Same genders") {
         this.$store.commit("removeWarning", "Gender");
       } else if (this.currentType == "Ratio-based") {
