@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import UploadCSV from "../components/UploadCSV.vue";
 import DisplayStudents from "../components/DisplayStudents.vue";
 import DisplayGroups from "../components/DisplayGroups.vue";
+import store from '../store/store'
 
 Vue.use(Router)
 
@@ -21,7 +22,7 @@ export default new Router({
         name: 'DisplayStudents',
         component: DisplayStudents,
         beforeEnter: (to, from, next) => {
-            if (from.name == 'UploadCSV' || from.name == 'DisplayGroups') {
+            if (store.state.parsedStudents) {
                 next()
             } else {
                 next({ name: 'UploadCSV' })
@@ -34,7 +35,7 @@ export default new Router({
         name: 'DisplayGroups',
         component: DisplayGroups,
         beforeEnter: (to, from, next) => {
-            if (from.name == "DisplayStudents") {
+            if (store.state.results) {
                 next()
             } else {
                 next({ name: 'UploadCSV' })

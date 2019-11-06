@@ -3,17 +3,8 @@
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense>
-          <v-list-item
-            class="pa-2 ma-2"
-            style="background-color: #FFBABA;"
-            @click.stop="backDialog = true"
-          >
-            <v-list-item-action>
-              <v-icon>mdi-arrow-left-bold</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>Go back</v-list-item-title>
-            </v-list-item-content>
+          <v-list-item>
+            <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
             <v-dialog v-model="backDialog" max-width="400">
               <v-card>
                 <v-card-title class="headline justify-center">Go back to the upload screen?</v-card-title>
@@ -29,7 +20,6 @@
         </v-list>
         <Filters></Filters>
       </v-navigation-drawer>
-
       <v-app-bar app fixed clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
@@ -131,7 +121,13 @@ import sendRequest from "../utility/request";
 export default {
   name: "display",
   computed: {
-    ...mapState(["parsedStudents", "parsedHeaders", "filters", "results", "warnings"]),
+    ...mapState([
+      "parsedStudents",
+      "parsedHeaders",
+      "filters",
+      "results",
+      "warnings"
+    ])
   },
   data: function() {
     return {
@@ -145,7 +141,7 @@ export default {
       resultDialog: false,
 
       allocationMessage: "",
-      error: {},
+      error: {}
     };
   },
   components: {
