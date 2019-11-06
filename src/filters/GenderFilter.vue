@@ -8,14 +8,14 @@
     </v-card-title>
     <v-list-item>
       <v-select
-        v-model="genderType"
-        :items="['Same genders', 'Ratio-based', 'Minimum of each']"
+        v-model="currentType"
+        :items="genderTypes"
         label="Filter type"
       ></v-select>
     </v-list-item>
-    <v-list-item v-if="genderType != &quot;Same genders&quot;">
+    <v-list-item v-if="currentType != &quot;Same genders&quot;">
       <v-slider
-        v-if="genderType == &quot;Ratio-based&quot;"
+        v-if="currentType == &quot;Ratio-based&quot;"
         :rules="ratioRules"
         step="5"
         min="0"
@@ -25,7 +25,7 @@
         v-model="genderRatio"
       ></v-slider>
       <v-text-field
-        v-if="genderType == &quot;Minimum of each&quot;"
+        v-if="currentType == &quot;Minimum of each&quot;"
         v-model="minMale"
         type="number"
         min="0"
@@ -33,7 +33,7 @@
         <p slot="prepend">Men:</p>
       </v-text-field>
       <v-text-field
-        v-if="genderType == &quot;Minimum of each&quot;"
+        v-if="currentType == &quot;Minimum of each&quot;"
         v-model="minFemale"
         type="number"
         min="0"
@@ -41,9 +41,9 @@
         <p slot="prepend">Women:</p>
       </v-text-field>
     </v-list-item>
-    <v-list-item v-if="genderType == &quot;Ratio-based&quot;">
+    <v-list-item v-if="currentType == &quot;Ratio-based&quot;">
       <v-text-field
-        v-if="genderType == &quot;Ratio-based&quot;"
+        v-if="currentType == &quot;Ratio-based&quot;"
         min="0"
         type="number"
         :rules="marginRules"
@@ -53,35 +53,31 @@
         <p slot="prepend">Error Margin %:</p>
       </v-text-field>
     </v-list-item>
-    <v-list-item v-if="genderType == &quot;Minimum of each&quot; && checkMinVal">
-       <v-alert
+    <v-list-item v-if="currentType == &quot;Minimum of each&quot; && checkMinVal">
+      <v-alert
         dense
         outlined
         max-height="50px"
         type="error"
         style="font-size:0.8em"
-      >
-        {{minErrorMessage}}
-      </v-alert>
+      >{{minErrorMessage}}</v-alert>
     </v-list-item>
   </v-card>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: "genderfilter",
-  props: {
-    filters: Object
-  },
   data: function() {
     return {
-      genderType: "Same genders",
+      currentType: "Same genders",
+      genderTypes: ['Same genders', 'Ratio-based', 'Minimum of each'],
       genderRatio: 50,
       genderErrorMargin: 0,
       marginErrors: [],
-      marginRules: [
-        () => this.checkMargin()
-      ],
+      marginRules: [() => this.checkMargin()],
       ratioRules: [
         v => v < 100 || "What about the women?",
         v => v > 0 || "What about the men?"
@@ -89,34 +85,41 @@ export default {
       minMale: 0,
       minFemale: 0,
       minErrorMessage: "You cannot have more minimums than the group size!",
-      values: ['genderRatio', 'genderErrorMargin', 'minMale', 'minFemale']
+      values: [
+        "sameGender",
+        "genderRatio",
+        "genderErrorMargin",
+        "minMale",
+        "minFemale"
+      ]
     };
   },
   watch: {
-    genderType: function() {
-      this.updateWarning()
-      this.updateFilters()
+    currentType: function() {
+      this.updateWarning();
+      this.updateFilters();
     },
     genderRatio: function() {
       this.updateFilters();
     },
     genderErrorMargin: function() {
       this.checkMargin();
-      this.updateFilters()
+      this.updateFilters();
     },
     minMale: function() {
-      this.checkMin()
-      this.updateFilters()
+      this.checkMin();
+      this.updateFilters();
     },
     minFemale: function() {
-      this.checkMin()
-      this.updateFilters()
+      this.checkMin();
+      this.updateFilters();
     },
     filters: function() {
       this.checkMargin();
     }
   },
   computed: {
+    ...mapState(["filters"]),
     minRatio: function() {
       return Math.ceil(
         (100 *
@@ -130,7 +133,10 @@ export default {
       return Math.min(this.genderRatio, 100 - this.genderRatio);
     },
     checkMinVal: function() {
-      return parseInt(this.minMale) + parseInt(this.minFemale) > this.filters.groupSizeUpperBound
+      return (
+        parseInt(this.minMale) + parseInt(this.minFemale) >
+        this.filters.groupSizeUpperBound
+      );
     }
   },
   mounted: function() {
@@ -139,23 +145,21 @@ export default {
   },
   methods: {
     remove() {
-      this.$emit("remove", {
-        type: "GenderFilter",
-        values: this.values
-      });
+      this.$store.commit("removeFromFilter", this.values);
+      this.$store.commit("removeFilter", "GenderFilter");
     },
     checkMargin() {
       if (!this.isMinRatio()) {
         this.marginErrors = [`Your minimum ratio should be ${this.minRatio}`];
-        this.$emit('warn', "Gender")
+        this.$store.commit("addWarning", "Gender");
       } else if (!this.isMaxRatio()) {
         this.marginErrors = [`Margin cannot be bigger than ${this.maxRatio}!`];
-        this.$emit('warn', "Gender")
+        this.$store.commit("addWarning", "Gender");
       } else {
-        this.marginErrors = []
-        this.$emit('unwarn', "Gender")
+        this.marginErrors = [];
+        this.$store.commit("removeWarning", "Gender");
       }
-      return true
+      return true;
     },
     isMinRatio() {
       return this.genderErrorMargin >= this.minRatio;
@@ -165,37 +169,35 @@ export default {
     },
     checkMin() {
       if (this.checkMinVal) {
-        console.log("Here")
-        this.$emit('warn', "Gender")
+        this.$store.commit("addWarning", "Gender");
       } else {
-        this.$emit('unwarn', "Gender")
+        this.$store.commit("removeWarning", "Gender");
       }
     },
     updateFilters() {
-      this.$emit('removeValues', this.values)
-      const values = {}
-      switch (this.genderType) {
+      this.$store.commit("removeFromFilter", this.values);
+      const values = {};
+      switch (this.currentType) {
         case "Same genders":
-          values.genderRatio = 1
-          values.genderErrorMargin = 0
+          values.sameGender = true;
           break;
         case "Ratio-based":
-          values.genderRatio = this.genderRatio / 100
-          values.genderErrorMargin = this.genderErrorMargin / 100
+          values.genderRatio = this.genderRatio / 100;
+          values.genderErrorMargin = this.genderErrorMargin / 100;
           break;
         default:
-          values.minMale   = this.minMale
-          values.minFemale = this.minFemale
+          values.minMale = this.minMale;
+          values.minFemale = this.minFemale;
       }
-      this.$emit('update', values)
+      this.$store.commit("updateFilters", values);
     },
     updateWarning() {
-      if (this.genderType == "Same genders") {
-        this.$emit('unwarn', "Gender")
-      } else if (this.genderType == "Ratio-based") {
-        this.checkMargin()
+      if (this.currentType == "Same genders") {
+        this.$store.commit("removeWarning", "Gender");
+      } else if (this.currentType == "Ratio-based") {
+        this.checkMargin();
       } else {
-        this.checkMin()
+        this.checkMin();
       }
     }
   }

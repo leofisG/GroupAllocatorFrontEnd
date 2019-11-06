@@ -6,9 +6,32 @@ import * as mutations from './mutations'
 Vue.use(Vuex)
 
 const state = {
-    test: "hello",
-    parsedData: null,
-    parsedHeaders: null
+    URL: "https://organiser-app.herokuapp.com/allocateGroups",
+    parsedStudents: null,
+    parsedHeaders: null,
+    filters: {},
+    openFilters: [
+        {
+          type: "SizeFilter",
+          name: "Size"
+        }
+      ],
+      availableFilters: [
+        {
+          type: "TimeZoneFilter",
+          name: "Timezone"
+        },
+        {
+          type: "AgeFilter",
+          name: "Age"
+        },
+        {
+          type: "GenderFilter",
+          name: "Gender"
+        }
+      ],
+    results: null,
+    warnings: []
 };
 
 const store = new Vuex.Store({

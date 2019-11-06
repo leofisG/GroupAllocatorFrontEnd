@@ -39,7 +39,7 @@ export function parse(file, event) {
 }
 
 export function generate(results) {
-    const csv = Papa.unparse(results.students)
+    const csv = Papa.unparse(results.students.sort((a, b) => a.groupId < b.groupId ? -1 : a.groupId > b.groupId ? -1 : 0))
     return new Blob([csv], {type: "text/csv;charset=utf-8"})
 }
 
@@ -66,8 +66,9 @@ function furtherParse(data, event) {
     });
     // eslint-disable-next-line no-console
     console.log(res[0]);
-    store.commit('setParsedData', res);
+    store.commit('setparsedStudents', res);
     store.commit('setParsedHeaders', headers);
+    store.commit('clearFilters');
     event.$router.push({path: "display-students"})
 }
 

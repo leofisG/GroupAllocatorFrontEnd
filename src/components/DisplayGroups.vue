@@ -72,14 +72,13 @@
                 <v-list flat>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
+                      <v-list-item-title class="headline mb-1 pa-2">Group {{index + 1}}</v-list-item-title>
                       <v-data-table
                         dense
                         :headers="headers"
                         :items="group"
                         hide-default-footer
                         item-key="id"
-                        class="elevation-1"
                       ></v-data-table>
                     </v-list-item-content>
                   </v-list-item>
@@ -96,9 +95,13 @@
 <script>
 import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
+import { mapState } from 'vuex'
 
 export default {
   name: "groupings",
+  computed: {
+    ...mapState(["results"])
+  },
   data: function() {
     return {
       search: "",
@@ -144,13 +147,13 @@ export default {
       this.$router.push({ path: "display-students" });
     },
     generateCSV() {
-      const blob = generate(this.$root.results);
+      const blob = generate(this.results);
       saveAs(blob, "results.csv");
       this.csvDialog = false;
     },
     generateGroups() {
-      const students = this.$root.results.students;
-      const amount = this.$root.results.numOfGroup;
+      const students = this.results.students;
+      const amount = this.results.numOfGroup;
       const unallocated = [];
       const groups = [];
       for (var i = 0; i < amount; i++) {

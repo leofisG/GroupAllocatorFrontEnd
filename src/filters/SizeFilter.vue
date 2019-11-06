@@ -2,11 +2,11 @@
   <v-card width="100%">
     <v-card-title class="justify-center">Group size</v-card-title>
     <v-list-item>
-      <v-select v-model="groupSizeType" :items="['Fixed', 'Variable']" label="Filter type"></v-select>
+      <v-select v-model="currentType" :items="groupSizeTypes" label="Filter type"></v-select>
     </v-list-item>
     <v-list-item>
       <v-text-field
-        v-if="groupSizeType == &quot;Fixed&quot;"
+        v-if="currentType == &quot;Fixed&quot;"
         type="number"
         min="1"
         label="Group size"
@@ -15,17 +15,17 @@
         @change="validateGroupSize"
       ></v-text-field>
       <v-range-slider
-        v-if="groupSizeType != &quot;Fixed&quot;"
+        v-if="currentType != &quot;Fixed&quot;"
         v-model="variableGroupRange"
-        :max="groupSizeUpperBound"
-        :min="groupSizeLowerBound"
+        :max="groupSizeUpperLimit"
+        :min="groupSizeLowerLimit"
         :thumb-size="24"
         thumb-label="always"
       >
         <template v-slot:prepend>
           <v-text-field
-            @change="validateGroupLowerBound"
-            v-model="groupSizeLowerBound"
+            @change="validateGroupLowerLimit"
+            v-model="groupSizeLowerLimit"
             class="mt-0 pt-0"
             hide-details
             single-line
@@ -35,8 +35,8 @@
         </template>
         <template v-slot:append>
           <v-text-field
-            @change="validateGroupUpperBound"
-            v-model="groupSizeUpperBound"
+            @change="validateGroupUpperLimit"
+            v-model="groupSizeUpperLimit"
             class="mt-0 pt-0"
             hide-details
             single-line
@@ -50,13 +50,16 @@
 </template>
 
 <script>
+import { mapGetters, mapState } from "vuex";
+
 export default {
   name: "sizefilter",
-  props: {
-    studentAmount: Number
+  computed: {
+    ...mapState(["filters"]),
+    ...mapGetters(["studentCount"])
   },
   watch: {
-    groupSizeType: function() {
+    currentType: function() {
       this.updateFilters();
     },
     fixedGroupSize: function() {
@@ -68,14 +71,26 @@ export default {
   },
   data: function() {
     return {
-      groupSizeType: "Fixed",
+      currentType: "Fixed",
+      groupSizeTypes: ['Fixed', 'Variable'],
       fixedGroupSize: 2,
       variableGroupRange: [2, 6],
-      groupSizeLowerBound: 1,
-      groupSizeUpperBound: 6,
+      groupSizeLowerLimit: 2,
+      groupSizeUpperLimit: 6
     };
   },
   mounted: function() {
+    if ("groupSizeLowerBound" in this.filters) {
+      if (this.filters.groupSizeLowerBound == this.filters.groupSizeUpperBound) {
+        this.fixedGroupSize = this.filters.groupSizeLowerBound
+      } else {
+        this.currentType = "Variable"
+        this.groupSizeLowerLimit = this.filters.groupSizeLowerBound
+        this.groupSizeUpperLimit = this.filters.groupSizeUpperBound
+        this.$set(this.variableGroupRange, 0, this.groupSizeLowerLimit);
+        this.$set(this.variableGroupRange, 1, this.groupSizeUpperLimit)
+      }
+    }
     this.updateFilters();
   },
   methods: {
@@ -83,46 +98,46 @@ export default {
       if (this.fixedGroupSize <= 1) {
         this.fixedGroupSize = 2;
       }
-      if (this.fixedGroupSize >= this.studentAmount) {
-        this.fixedGroupSize = this.studentAmount - 1;
+      if (this.fixedGroupSize >= this.studentCount) {
+        this.fixedGroupSize = this.studentCount - 1;
       }
     },
-    validateGroupLowerBound() {
-      if (this.groupSizeLowerBound <= 0) {
-        this.groupSizeLowerBound = 1;
+    validateGroupLowerLimit() {
+      if (this.groupSizeLowerLimit <= 1) {
+        this.groupSizeLowerLimit = 2;
       }
-      if (this.groupSizeLowerBound >= this.groupSizeUpperBound) {
-        this.groupSizeLowerBound = this.groupSizeUpperBound - 1;
+      if (this.groupSizeLowerLimit >= this.groupSizeUpperLimit) {
+        this.groupSizeLowerLimit = this.groupSizeUpperLimit - 1;
       }
-      if (this.groupSizeLowerBound >= this.studentAmount - 1) {
-        this.groupSizeLowerBound = this.studentAmount - 2;
+      if (this.groupSizeLowerLimit >= this.studentCount - 1) {
+        this.groupSizeLowerLimit = this.studentCount - 2;
       }
       this.validateGroupRange();
     },
-    validateGroupUpperBound() {
-      if (this.groupSizeUpperBound <= 0) {
-        this.groupSizeUpperBound = 2;
+    validateGroupUpperLimit() {
+      if (this.groupSizeUpperLimit <= 0) {
+        this.groupSizeUpperLimit = 3;
       }
-      if (this.groupSizeUpperBound <= this.groupSizeLowerBound) {
-        this.groupSizeUpperBound = this.groupSizeLowerBound + 1;
+      if (this.groupSizeUpperLimit <= this.groupSizeLowerLimit) {
+        this.groupSizeUpperLimit = this.groupSizeLowerLimit + 1;
       }
-      if (this.groupSizeUpperBound >= this.studentAmount) {
-        this.groupSizeUpperBound = this.studentAmount - 1;
+      if (this.groupSizeUpperLimit >= this.studentCount) {
+        this.groupSizeUpperLimit = this.studentCount - 1;
       }
       this.validateGroupRange();
     },
     validateGroupRange() {
-      if (this.variableGroupRange[0] < this.groupSizeLowerBound) {
-        this.$set(this.variableGroupRange, 0, this.groupSizeLowerBound)
+      if (this.variableGroupRange[0] < this.groupSizeLowerLimit) {
+        this.$set(this.variableGroupRange, 0, this.groupSizeLowerLimit);
       }
-      if (this.variableGroupRange[1] > this.groupSizeUpperBound) {
-        this.$set(this.variableGroupRange, 1, this.groupSizeUpperBound)
+      if (this.variableGroupRange[1] > this.groupSizeUpperLimit) {
+        this.$set(this.variableGroupRange, 1, this.groupSizeUpperLimit);
       }
       this.$forceUpdate();
     },
     updateFilters() {
       const values =
-        this.groupSizeType == "Fixed"
+        this.currentType == "Fixed"
           ? {
               groupSizeLowerBound: this.fixedGroupSize,
               groupSizeUpperBound: this.fixedGroupSize
@@ -131,7 +146,7 @@ export default {
               groupSizeLowerBound: this.variableGroupRange[0],
               groupSizeUpperBound: this.variableGroupRange[1]
             };
-      this.$emit("update", values);
+      this.$store.commit("updateFilters", values);
     }
   }
 };
