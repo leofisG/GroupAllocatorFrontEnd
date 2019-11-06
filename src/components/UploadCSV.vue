@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { parse } from "../myparser";
+import { parse } from "../utility/parser/myparser";
 
 export default {
   name: "upload",

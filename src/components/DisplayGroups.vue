@@ -3,17 +3,8 @@
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense>
-          <v-list-item
-            class="pa-2 ma-2"
-            style="background-color: #FFBABA;"
-            @click.stop="backDialog = true"
-          >
-            <v-list-item-action>
-              <v-icon>mdi-arrow-left-bold</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>Go back</v-list-item-title>
-            </v-list-item-content>
+          <v-list-item>
+            <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
             <v-dialog v-model="backDialog" max-width="450">
               <v-card>
                 <v-card-title class="headline justify-center">Go back to the allocation screen?</v-card-title>
@@ -30,13 +21,13 @@
         <v-list v-if="unallocated.length > 0">
           <v-subheader>Unallocated students</v-subheader>
           <v-data-table
-                        dense
-                        :headers="headers"
-                        :items="unallocated"
-                        hide-default-footer
-                        item-key="id"
-                        class="elevation-1"
-                      ></v-data-table>
+            dense
+            :headers="headers"
+            :items="unallocated"
+            hide-default-footer
+            item-key="id"
+            class="elevation-1"
+          ></v-data-table>
         </v-list>
       </v-navigation-drawer>
 
@@ -72,14 +63,13 @@
                 <v-list flat>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title class="headline mb-1">Group {{index + 1}}</v-list-item-title>
+                      <v-list-item-title class="headline mb-1 pa-2">Group {{index + 1}}</v-list-item-title>
                       <v-data-table
                         dense
                         :headers="headers"
                         :items="group"
                         hide-default-footer
                         item-key="id"
-                        class="elevation-1"
                       ></v-data-table>
                     </v-list-item-content>
                   </v-list-item>
@@ -94,11 +84,15 @@
 </template>
 
 <script>
-import { generate } from "../myparser";
+import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
+import { mapState } from "vuex";
 
 export default {
   name: "groupings",
+  computed: {
+    ...mapState(["results"])
+  },
   data: function() {
     return {
       search: "",
@@ -144,13 +138,13 @@ export default {
       this.$router.push({ path: "display-students" });
     },
     generateCSV() {
-      const blob = generate(this.$root.results);
+      const blob = generate(this.results);
       saveAs(blob, "results.csv");
       this.csvDialog = false;
     },
     generateGroups() {
-      const students = this.$root.results.students;
-      const amount = this.$root.results.numOfGroup;
+      const students = this.results.students;
+      const amount = this.results.numOfGroup;
       const unallocated = [];
       const groups = [];
       for (var i = 0; i < amount; i++) {

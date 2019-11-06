@@ -3,17 +3,8 @@
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-list dense>
-          <v-list-item
-            class="pa-2 ma-2"
-            style="background-color: #FFBABA;"
-            @click.stop="backDialog = true"
-          >
-            <v-list-item-action>
-              <v-icon>mdi-arrow-left-bold</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>Go back</v-list-item-title>
-            </v-list-item-content>
+          <v-list-item>
+            <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
             <v-dialog v-model="backDialog" max-width="400">
               <v-card>
                 <v-card-title class="headline justify-center">Go back to the upload screen?</v-card-title>
@@ -27,15 +18,8 @@
             </v-dialog>
           </v-list-item>
         </v-list>
-        <Filters
-          v-bind:studentAmount="studentAmount"
-          v-bind:student="this.$root.data[0]"
-          @update="updateFilters"
-          @warn="warnUser"
-          @unwarn="unwarnUser"
-        ></Filters>
+        <Filters></Filters>
       </v-navigation-drawer>
-
       <v-app-bar app fixed clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
@@ -65,7 +49,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="nextDialog = false">back</v-btn>
-              <v-btn color="green darken-1" text @click="sendRequest">Confirm</v-btn>
+              <v-btn color="green darken-1" text @click="prepareRequest">Confirm</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -93,7 +77,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="errorDialog = false">Cancel</v-btn>
-              <v-btn color="green darken-1" text @click="sendRequest">Try again</v-btn>
+              <v-btn color="green darken-1" text @click="prepareRequest">Try again</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -110,8 +94,8 @@
                   <v-text-field v-model="search" label="Search" single-line hide-details></v-text-field>
                 </v-card-title>
                 <v-data-table
-                  :headers="this.$root.headers"
-                  :items="this.$root.data"
+                  :headers="parsedHeaders"
+                  :items="parsedStudents"
                   :footer-props="{
                      'items-per-page-options': [20, 50, 100, -1]
                   }"
@@ -131,92 +115,60 @@
 
 <script>
 import Filters from "./Filters";
+import { mapState } from "vuex";
+import sendRequest from "../utility/request";
 
 export default {
   name: "display",
+  computed: {
+    ...mapState([
+      "parsedStudents",
+      "parsedHeaders",
+      "filters",
+      "results",
+      "warnings"
+    ])
+  },
   data: function() {
     return {
       search: "",
       drawer: null,
-      results: null,
+
       backDialog: false,
       warningDialog: false,
       nextDialog: false,
       errorDialog: false,
       resultDialog: false,
-      studentAmount: this.$root.data.length,
-      filters: {},
+
       allocationMessage: "",
-      error: {},
-      warnings: []
+      error: {}
     };
   },
   components: {
     Filters
   },
   methods: {
-    goBack() {
-      this.$router.push({ path: "/" });
-    },
-    sendRequest() {
+    prepareRequest() {
       this.errorDialog = false;
       this.error = {};
-      this.results = null;
-      const display = this;
-      const filters = this.filters;
-      const requestData = {
-        filters: filters,
-        students: this.$root.data
-      };
-      const xml = new XMLHttpRequest();
-      xml.open(
-        "POST",
-        "https://organiser-app.herokuapp.com/allocateGroups",
-        true
-      );
-      xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xml.onreadystatechange = () => {
-        if (xml.readyState == 4) {
-          if (xml.status == 200) {
-            const response = JSON.parse(xml.responseText);
-            display.allocationMessage = display.generateResultMessage(response);
-            display.results = response;
-          } else {
-            // eslint-disable-next-line
-            console.log(xml.status);
-            // eslint-disable-next-line
-            if (xml.responseText) {
-              const error = JSON.parse(xml.responseText);
-              console.log(error);
-              display.error = error;
-            } else {
-              display.error = {
-                status: "Unknown",
-                message: "Request timed out"
-              }
-            }
-            display.resultDialog = false;
-            display.errorDialog = true;
-          }
-        }
-      };
-      // eslint-disable-next-line
-      console.log(filters);
-      xml.send(JSON.stringify(requestData));
+      this.$store.commit("removeResults");
+      sendRequest(this);
       this.nextDialog = false;
       this.resultDialog = true;
+    },
+    goBack() {
+      this.$router.push({ path: "/" });
     },
     cancelResults() {
       this.resultDialog = false;
     },
     showResults() {
       this.combineResults();
-      this.$root.results = this.results;
       this.$router.push({ path: "display-groups" });
     },
     combineResults() {
       const results = this.results.students;
-      const students = this.$root.data;
+      const students = this.parsedStudents;
       const map = {};
       for (const student of results) {
         map[student.id] = student.groupId;
@@ -224,10 +176,7 @@ export default {
       for (const student of students) {
         student["groupId"] = map[student.id];
       }
-      this.results.students = students;
-    },
-    updateFilters(newFilters) {
-      this.filters = newFilters;
+      this.$store.commit("updateResultStudents", students);
     },
     generateResultMessage(response) {
       var message = `${response.numOfGroup} groups allocated`;
@@ -238,16 +187,6 @@ export default {
       }
       message += ".";
       return message;
-    },
-    warnUser(filterName) {
-      // eslint-disable-next-line
-      console.log(filterName);
-      if (!this.warnings.includes(filterName)) {
-        this.warnings.push(filterName);
-      }
-    },
-    unwarnUser(filterName) {
-      this.warnings = this.warnings.filter(e => e != filterName);
     },
     checkSubmission() {
       if (this.warnings.length > 0) {

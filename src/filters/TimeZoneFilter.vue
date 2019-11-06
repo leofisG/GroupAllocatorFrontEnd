@@ -7,9 +7,9 @@
       </v-btn>
     </v-card-title>
     <v-list-item>
-      <v-select v-model="timeZoneType" :items="['Same', 'Different']" label="Filter type"></v-select>
+      <v-select v-model="currentType" :items="timeZoneTypes" label="Filter type"></v-select>
     </v-list-item>
-    <v-list-item v-if="timeZoneType == &quot;Different&quot;">
+    <v-list-item v-if="currentType == &quot;Different&quot;">
       <v-text-field
         type="number"
         min="0"
@@ -27,12 +27,13 @@ export default {
   name: "timezonefilter",
   data: function() {
     return {
-      timeZoneType: "Same",
+      currentType: "Same",
+      timeZoneTypes: ['Same', 'Different'],
       timezoneDiff: 1
     };
   },
   watch: {
-    timeZoneType: function() {
+    currentType: function() {
       this.updateFilters()
     },
     timezoneDiff: function() {
@@ -52,21 +53,19 @@ export default {
       }
     },
     remove() {
-      this.$emit("remove", {
-        type: "TimeZoneFilter",
-        values: ["timezoneDiff"]
-      });
+      this.$store.commit("removeFromFilter", ["timezoneDiff"])
+      this.$store.commit("removeFilter", "TimeZoneFilter");
     },
     updateFilters() {
       const values =
-        this.timeZoneType == "Same"
+        this.currentType == "Same"
           ? {
               timezoneDiff: 0
             }
           : {
               timezoneDiff: this.timezoneDiff
             };
-      this.$emit("update", values);
+      this.$store.commit("updateFilters", values);
     }
   }
 };
