@@ -5,17 +5,13 @@
         <v-list dense>
           <v-list-item>
             <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
-            <v-dialog v-model="backDialog" max-width="400">
-              <v-card>
-                <v-card-title class="headline justify-center">Go back to the upload screen?</v-card-title>
-                <v-card-text>Your work will be lost if you do!</v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="green darken-1" text @click="backDialog = false">Stay</v-btn>
-                  <v-btn color="red" text @click="goBack">Go back</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+            <back-dialog
+              v-if="backDialog"
+              @close="backDialog = false"
+              @back="goBack"
+              destination="the upload screen"
+              lossWarning=">The current file"
+            ></back-dialog>
           </v-list-item>
         </v-list>
         <Filters></Filters>
@@ -104,6 +100,7 @@
                   class="elevation-1"
                   loading-text="Loading... Please wait"
                 ></v-data-table>
+                <v-text-field dense v-model="debugURL"></v-text-field>
               </v-card>
             </v-col>
           </v-row>
@@ -117,10 +114,19 @@
 import Filters from "./Filters";
 import { mapState } from "vuex";
 import sendRequest from "../utility/request";
+import backDialog from "../dialogs/backDialog";
 
 export default {
   name: "display",
   computed: {
+    debugURL: {
+      get() {
+        return this.$store.state.debugURL;
+      },
+      set(newURL) {
+        this.$store.commit("updateDebugURL", newURL);
+      }
+    },
     ...mapState([
       "parsedStudents",
       "parsedHeaders",
@@ -145,7 +151,8 @@ export default {
     };
   },
   components: {
-    Filters
+    Filters,
+    "back-dialog": backDialog
   },
   methods: {
     prepareRequest() {
