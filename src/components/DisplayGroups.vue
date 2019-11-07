@@ -181,7 +181,7 @@ export default {
           value: "country"
         },
         {
-          text: "Action",
+          text: "",
           value: "action",
           sortable: false
         }

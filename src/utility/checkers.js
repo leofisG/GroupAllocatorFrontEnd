@@ -77,13 +77,17 @@ export const checkGender = (group, filters) => {
         var maleCount = 0;
         for (const student of group) {
             if (student.gender == "Male") {
-                maleCount ++;
+                maleCount++;
             }
         }
         const ratio = maleCount / group.length
         const lowerBound = filters.genderRatio - filters.genderErrorMargin;
         const upperBound = filters.genderRatio + filters.genderErrorMargin;
-        message = `Male:Female ratio is between ${lowerBound} and ${upperBound}`
+        if (lowerBound == upperBound) {
+            message = `Male:Female ratio is ${lowerBound}`
+        } else {
+            message = `Male:Female ratio is between ${lowerBound} and ${upperBound}`
+        }
         status = ratio >= lowerBound && ratio <= upperBound;
     } else {
         //eslint-disable-next-line
@@ -91,9 +95,9 @@ export const checkGender = (group, filters) => {
         var femaleCount = 0;
         for (const student of group) {
             if (student.gender == "male") {
-                maleCount ++;
+                maleCount++;
             } else {
-                femaleCount ++;
+                femaleCount++;
             }
         }
         status = maleCount >= filters.minMale && femaleCount >= filters.minFemale;
