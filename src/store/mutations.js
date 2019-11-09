@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { cloneDeep } from 'lodash';
 
 export const setparsedStudents = (state, result) => {
     state.parsedStudents = result;
@@ -17,7 +18,13 @@ export const storeResults = (state, results) => {
 }
 
 export const updateResultStudents = (state, students) => {
-    state.results = { ...state.results, students: students }
+    state.results = { ...state.results, students: students };
+    state.originalResults = cloneDeep(state.results);
+}
+
+export const resetResults = state => {
+    state.results = state.originalResults;
+    state.originalResults = cloneDeep(state.originalResults);
 }
 
 export const clearFilters = state => {

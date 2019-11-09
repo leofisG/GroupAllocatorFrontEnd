@@ -1,7 +1,7 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="325">
+      <v-navigation-drawer v-model="drawer" app clipped temporary :width="500">
         <v-list dense>
           <v-list-item>
             <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
@@ -18,7 +18,7 @@
           <v-subheader>Unallocated students</v-subheader>
           <v-data-table
             dense
-            :headers="headers"
+            :headers="unallocHeaders"
             :items="unallocated"
             hide-default-footer
             item-key="id"
@@ -31,6 +31,23 @@
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Allocated groups</v-toolbar-title>
         <v-spacer></v-spacer>
+        <v-btn
+          v-if="isModified"
+          class="mx-5"
+          color="orange"
+          @click="resetDialog = true"
+        >Reset groupings</v-btn>
+        <v-dialog v-model="resetDialog" max-width="400">
+          <v-card>
+            <v-card-title class="headline justify-center">Reset to original groupings?</v-card-title>
+            <v-alert class="mx-5" type="warning">This action cannot be undone!</v-alert>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="green darken-1" text @click="resetDialog = false">No</v-btn>
+              <v-btn color="red" text @click="resetGroupings">Yes</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-btn color="green darken-1" justify-end @click="csvDialog = true">Download CSV</v-btn>
         <v-dialog v-model="csvDialog" max-width="400">
           <v-card>
@@ -44,6 +61,23 @@
         </v-dialog>
       </v-app-bar>
       <v-content>
+        <v-dialog v-model="deleteDialog" max-width="600">
+          <v-card>
+            <v-card-title
+              class="headline justify-center"
+            >Remove student with ID {{ selectedStudentId }} from Group {{ selectedGroupId }}?</v-card-title>
+            <v-alert
+              class="mx-5"
+              type="warning"
+              v-if="lastWarning"
+            >Warning, removing this student will delete the group!</v-alert>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="green darken-1" text @click="deleteDialog=false">No</v-btn>
+              <v-btn color="red" text @click="confirmUnalloc">Yes</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-container class="fill-height" fluid>
           <v-row class="fill-height" align="start" justify="center">
             <v-col
@@ -59,14 +93,21 @@
                 <v-list flat>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title class="headline mb-1 pa-2">Group {{index + 1}}</v-list-item-title>
+                      <v-list-item-title class="headline mb-1 pa-2">
+                        Group {{index + 1}}
+                        <group-checker v-bind:group="group"></group-checker>
+                      </v-list-item-title>
                       <v-data-table
                         dense
                         :headers="headers"
                         :items="group"
                         hide-default-footer
                         item-key="id"
-                      ></v-data-table>
+                      >
+                        <template v-slot:item.action="{ item }">
+                          <v-icon small @click="unallocateStudent(item)">delete</v-icon>
+                        </template>
+                      </v-data-table>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -84,13 +125,29 @@ import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
 import { mapState } from "vuex";
 import backDialog from "../dialogs/backDialog";
+import Checker from "./Checker";
 
 export default {
   name: "groupings",
   components: {
-    "back-dialog": backDialog
+    "back-dialog": backDialog,
+    "group-checker": Checker
   },
   computed: {
+    selectedStudentId() {
+      if (this.selectedStudent) {
+        return this.selectedStudent.id;
+      } else {
+        return "no_id";
+      }
+    },
+    selectedGroupId() {
+      if (this.selectedStudent) {
+        return this.selectedStudent.groupId;
+      } else {
+        return "no_group";
+      }
+    },
     ...mapState(["results"])
   },
   data: function() {
@@ -99,6 +156,11 @@ export default {
       drawer: null,
       csvDialog: false,
       backDialog: false,
+      deleteDialog: false,
+      lastWarning: false,
+      resetDialog: false,
+      isModified: false,
+      selectedStudent: null,
       groups: [],
       unallocated: [],
       headers: [
@@ -117,18 +179,29 @@ export default {
         {
           text: "Country",
           value: "country"
+        },
+        {
+          text: "",
+          value: "action",
+          sortable: false
         }
       ],
-      unAllocHeaders: [
+      unallocHeaders: [
         {
           text: "CID",
           value: "id"
         },
         {
-          text: "Group number",
-          align: "center",
-          value: "groupId",
-          filter: value => value == 0
+          text: "Gender",
+          value: "gender"
+        },
+        {
+          text: "Age",
+          value: "age"
+        },
+        {
+          text: "Country",
+          value: "country"
         }
       ]
     };
@@ -159,6 +232,47 @@ export default {
       }
       this.groups = groups;
       this.unallocated = unallocated;
+    },
+    resetGroupings() {
+      this.$store.commit("resetResults");
+      this.generateGroups();
+      this.resetDialog = false;
+      this.isModified = false;
+    },
+    unallocateStudent(student) {
+      this.selectedStudent = student;
+      if (this.groups[student.groupId - 1].length == 1) {
+        this.lastWarning = true;
+      } else {
+        this.lastWarning = false;
+      }
+      this.deleteDialog = true;
+    },
+    confirmUnalloc() {
+      const student = this.selectedStudent;
+      console.log(student);
+      this.$set(
+        this.groups,
+        student.groupId - 1,
+        this.groups[student.groupId - 1].filter(e => e != student)
+      );
+      // If group is now empty, remove and shift everyone down
+      if (this.groups[student.groupId - 1].length == 0) {
+        this.shiftGroups(student.groupId - 1);
+      }
+      student.groupId = 0;
+      this.unallocated.push(student);
+      this.deleteDialog = false;
+      this.isModified = true;
+    },
+    shiftGroups(id) {
+      this.$delete(this.groups, id);
+      for (var i = id; i < this.groups.length; i++) {
+        const group = this.groups[i];
+        for (const student of group) {
+          student.groupId = student.groupId - 1;
+        }
+      }
     }
   },
   created() {
