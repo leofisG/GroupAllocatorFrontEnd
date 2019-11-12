@@ -4,7 +4,6 @@ import Router from 'vue-router'
 import UploadCSV from "../components/UploadCSV.vue";
 import DisplayStudents from "../components/DisplayStudents.vue";
 import DisplayGroups from "../components/DisplayGroups.vue";
-import Login from "../components/Login.vue";
 import store from '../store/store'
 
 Vue.use(Router)
@@ -15,31 +14,20 @@ export default new Router({
   routes: [
     {
         path: '/',
-        name: 'Login',
-        component: Login
-    },
-    {
-        path: '/uploadcsv',
         name: 'UploadCSV',
-        component: UploadCSV,
-        beforeEnter: (to, from, next) => {
-            if (store.state.isAuthenticated) {
-                next()
-            } else {
-                next({ name: 'Login' })
-            }
-        }
+        component: UploadCSV
     },
     {
         path: '/display-students',
         name: 'DisplayStudents',
         component: DisplayStudents,
         beforeEnter: (to, from, next) => {
-            if (store.state.isAuthenticated && store.state.parsedStudents) {
+            if (store.state.parsedStudents) {
                 next()
             } else {
                 next({ name: 'UploadCSV' })
             }
+            // TODO: check whether there is students store in the $root. If not redirect.
         }
     },
     {
@@ -47,11 +35,12 @@ export default new Router({
         name: 'DisplayGroups',
         component: DisplayGroups,
         beforeEnter: (to, from, next) => {
-            if (store.state.isAuthenticated && store.state.results) {
+            if (store.state.results) {
                 next()
             } else {
                 next({ name: 'UploadCSV' })
             }
+            // TODO: check whether there is results store in the $root. If not redirect.
         }
     },
   ]
