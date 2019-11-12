@@ -92,7 +92,7 @@ export default {
         this.$store.commit("authenticateUser");
         this.$router.push({ path: "uploadcsv" });
       } else {
-        this.showWrongPasswordPopUp()
+        this.openWrongPasswordPopUp()
       }
     },
     hashMD5(password) {
