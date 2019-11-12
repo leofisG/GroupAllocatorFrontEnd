@@ -73,3 +73,7 @@ export const clearWarnings = state => {
 export const updateDebugURL = (state, url) => {
     state.debugURL = url;
 }
+
+export const setPassword = (state, password) => {
+    state.password = password
+}
