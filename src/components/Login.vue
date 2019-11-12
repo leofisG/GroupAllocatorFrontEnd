@@ -1,6 +1,6 @@
 <template>
-  <div class="upload">
-    <v-app id="inspire">
+  <div id="login">
+    <v-app>
         <v-content>
           <v-container
             fluid
@@ -79,17 +79,16 @@ export default {
     };
   },
   methods: {
+    openWrongPasswordPopUp() {
+      this.isPasswordWrong = true
+    },
     closeWrongPasswordPopUp() {
       this.isPasswordWrong = false
     },
-    showWrongPasswordPopUp() {
-      this.isPasswordWrong = true
-    },
     setPassword() {
       const correctPasswordHash = "19d8ab3b0210ddf9a86771ffc38d0a9d";
-      const hash = this.hashMD5(this.password);
-      this.$store.commit("setPassword", hash);
-      if (this.hashMD5(this.password) === correctPasswordHash) {
+      const currentPasswordHash = this.hashMD5(this.password);
+      if (currentPasswordHash === correctPasswordHash) {
         this.$store.commit("authenticateUser");
         this.$router.push({ path: "uploadcsv" });
       } else {
