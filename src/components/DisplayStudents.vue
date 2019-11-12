@@ -10,7 +10,7 @@
               @close="backDialog = false"
               @back="goBack"
               destination="the upload screen"
-              lossWarning=">The current file"
+              lossWarning="The current file"
             ></back-dialog>
           </v-list-item>
         </v-list>
@@ -21,10 +21,10 @@
         <v-toolbar-title>Student Allocator</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn color="green darken-1" justify-end @click="checkSubmission">Submit allocation</v-btn>
-        <v-dialog v-model="warningDialog" max-width="400">
+        <v-dialog v-model="warningDialog">
           <v-card>
             <v-card-title class="headline justify-center">Error in filters!</v-card-title>
-            <v-card-text>Please correct errors in the following filters:</v-card-text>
+            <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
             <v-list>
               <v-list-item
                 v-for="warning in warnings"
@@ -38,10 +38,10 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="nextDialog" max-width="400">
+        <v-dialog v-model="nextDialog">
           <v-card>
             <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
-            <v-card-text>Have you chosen the correct filters?</v-card-text>
+            <v-alert class="mx-5" type="info">Have you chosen the correct filters?</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="nextDialog = false">back</v-btn>
@@ -49,14 +49,14 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="resultDialog" max-width="400">
+        <v-dialog v-model="resultDialog">
           <v-card>
             <v-card-title
               v-if="!results"
               class="headline justify-center"
             >Generating Group Allocation...</v-card-title>
             <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
-            <v-card-text v-if="results">{{ allocationMessage }}</v-card-text>
+            <v-alert v-if="results" class="mx-5" type="info">{{ allocationMessage }}</v-alert>
             <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -65,7 +65,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="errorDialog" max-width="400">
+        <v-dialog v-model="errorDialog">
           <v-card>
             <v-card-title class="headline justify-center">Server error occured!</v-card-title>
             <v-card-text>Status: {{ error.status }}</v-card-text>
@@ -115,6 +115,7 @@ import Filters from "./Filters";
 import { mapState } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
+import { merge } from 'lodash'
 
 export default {
   name: "display",
@@ -178,10 +179,13 @@ export default {
       const students = this.parsedStudents;
       const map = {};
       for (const student of results) {
-        map[student.id] = student.groupId;
+        map[student.id] = {
+          groupId: student.groupId,
+          timezone: student.timezone
+        }
       }
       for (const student of students) {
-        student["groupId"] = map[student.id];
+        merge(student, map[student.id])
       }
       this.$store.commit("updateResultStudents", students);
     },

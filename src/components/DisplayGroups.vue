@@ -15,9 +15,11 @@
           </v-list-item>
         </v-list>
         <v-list v-if="unallocated.length > 0">
-          <v-subheader>Unallocated students</v-subheader>
+          <v-alert class="mx-5" type="warning">Unallocated students</v-alert>
           <v-data-table
             dense
+            show-select
+            v-model="selectedUnalloc"
             :headers="unallocHeaders"
             :items="unallocated"
             hide-default-footer
@@ -25,6 +27,20 @@
             class="elevation-1"
           ></v-data-table>
         </v-list>
+        <v-btn class="mx-5" color="orange" v-if="selectedUnalloc.length > 0" @click="editDialog = true">Add to Group</v-btn>
+        <v-btn class="mx-5" color="green" v-if="selectedUnalloc.length > 0" @click="newDialog = true">New group</v-btn>
+        <v-dialog v-model="editDialog">
+          <v-card>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="newDialog">
+          <v-dialog></v-dialog>
+        </v-dialog>
+        <v-alert
+          v-if="unallocated.length == 0"
+          class="mx-5"
+          type="success"
+        >All students have been allocated!</v-alert>
       </v-navigation-drawer>
 
       <v-app-bar app clipped-left>
@@ -37,7 +53,7 @@
           color="orange"
           @click="resetDialog = true"
         >Reset groupings</v-btn>
-        <v-dialog v-model="resetDialog" max-width="400">
+        <v-dialog v-model="resetDialog">
           <v-card>
             <v-card-title class="headline justify-center">Reset to original groupings?</v-card-title>
             <v-alert class="mx-5" type="warning">This action cannot be undone!</v-alert>
@@ -49,7 +65,7 @@
           </v-card>
         </v-dialog>
         <v-btn color="green darken-1" justify-end @click="csvDialog = true">Download CSV</v-btn>
-        <v-dialog v-model="csvDialog" max-width="400">
+        <v-dialog v-model="csvDialog">
           <v-card>
             <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
             <v-card-actions>
@@ -61,11 +77,15 @@
         </v-dialog>
       </v-app-bar>
       <v-content>
-        <v-dialog v-model="deleteDialog" max-width="600">
+        <v-dialog v-model="deleteDialog">
           <v-card>
-            <v-card-title
-              class="headline justify-center"
-            >Remove student with ID {{ selectedStudentId }} from Group {{ selectedGroupId }}?</v-card-title>
+            <v-card-title justify-center>
+              <v-alert
+                width="100%"
+                class="mx-5"
+                type="info"
+              >Remove student with ID {{ selectedStudentId }} from Group {{ selectedGroupId }}?</v-alert>
+            </v-card-title>
             <v-alert
               class="mx-5"
               type="warning"
@@ -160,9 +180,12 @@ export default {
       lastWarning: false,
       resetDialog: false,
       isModified: false,
+      editDialog: false,
+      newDialog: false,
       selectedStudent: null,
       groups: [],
       unallocated: [],
+      selectedUnalloc: [],
       headers: [
         {
           text: "CID",
