@@ -74,6 +74,6 @@ export const updateDebugURL = (state, url) => {
     state.debugURL = url;
 }
 
-export const setPassword = (state, password) => {
-    state.password = password
+export const authenticateUser = state => {
+    state.isAuthenticated = true
 }
