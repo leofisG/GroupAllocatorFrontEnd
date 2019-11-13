@@ -75,6 +75,7 @@ export const updateURL = (state, index) => {
     } else {
         state.usedURL = state.debugURL
     }
+}
 
 export const authenticateUser = state => {
     state.isAuthenticated = true
