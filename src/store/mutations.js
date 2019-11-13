@@ -23,8 +23,7 @@ export const updateResultStudents = (state, students) => {
 }
 
 export const resetResults = state => {
-    state.results = state.originalResults;
-    state.originalResults = cloneDeep(state.originalResults);
+    state.results = cloneDeep(state.originalResults);
 }
 
 export const clearFilters = state => {

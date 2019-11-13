@@ -190,7 +190,7 @@ export default {
       this.$store.commit("updateResultStudents", students);
     },
     generateResultMessage(response) {
-      var message = `${response.numOfGroup} groups allocated`;
+      let message = `${response.numOfGroup} groups allocated`;
       if (response.numOfUnalloc == 1) {
         message += ", 1 student could not be allocated";
       } else if (response.numOfUnalloc > 1) {
