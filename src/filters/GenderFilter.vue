@@ -81,7 +81,7 @@ export default {
       minFemale: 0,
       minErrorMessage: "You cannot have more minimums than the group size!",
       values: [
-        "sameGender",
+        "isSameGender",
         "genderRatio",
         "genderErrorMargin",
         "minMale",
@@ -191,7 +191,7 @@ export default {
       const values = {};
       switch (this.currentType) {
         case "Same genders":
-          values.sameGender = true;
+          values.isSameGender = true;
           break;
         case "Ratio-based":
           values.genderRatio = this.genderRatio / 100;

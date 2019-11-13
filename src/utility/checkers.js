@@ -7,7 +7,7 @@ export const checkAll = (group, filters) => {
     if ("ageDiff" in filters) {
         validities.push(checkAge(group, filters));
     }
-    if ("sameGender" in filters || "genderRatio" in filters || "minMale" in filters) {
+    if ("isSameGender" in filters || "genderRatio" in filters || "minMale" in filters) {
         validities.push(checkGender(group, filters))
     }
     return validities;
@@ -65,7 +65,7 @@ export const checkAge = (group, filters) => {
 export const checkGender = (group, filters) => {
     let status = true;
     let message = "Group consists of same genders";
-    if ("sameGender" in filters) {
+    if ("isSameGender" in filters) {
         const gender = group[0].gender;
         for (const student of group) {
             if (student.gender != gender) {
