@@ -69,6 +69,10 @@ export const clearWarnings = state => {
     state.warnings = [];
 }
 
-export const updateDebugURL = (state, url) => {
-    state.debugURL = url;
+export const updateURL = (state, index) => {
+    if (index == 0) {
+        state.usedURL = state.productionURL
+    } else {
+        state.usedURL = state.debugURL
+    }
 }

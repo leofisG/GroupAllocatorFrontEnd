@@ -20,7 +20,11 @@
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn color="green darken-1" justify-end @click="checkSubmission">Submit allocation</v-btn>
+        <v-btn
+          color="green darken-1 white--text"
+          justify-end
+          @click="checkSubmission"
+        >Submit allocation</v-btn>
         <v-dialog v-model="warningDialog">
           <v-card>
             <v-card-title class="headline justify-center">Error in filters!</v-card-title>
@@ -100,7 +104,12 @@
                   class="elevation-1"
                   loading-text="Loading... Please wait"
                 ></v-data-table>
-                <v-text-field dense v-model="debugURL"></v-text-field>
+              </v-card>
+              <v-card>
+              <v-btn-toggle class="mx-5" v-model="usedURL" mandatory>
+                <v-btn>Master</v-btn>
+                <v-btn>Sprint</v-btn>
+              </v-btn-toggle>
               </v-card>
             </v-col>
           </v-row>
@@ -115,17 +124,21 @@ import Filters from "./Filters";
 import { mapState } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
-import { merge } from 'lodash'
+import { merge } from "lodash";
 
 export default {
   name: "display",
   computed: {
-    debugURL: {
+    usedURL: {
       get() {
-        return this.$store.state.debugURL;
+        if (this.$store.state.usedURL == this.$store.state.productionURL) {
+          return 0
+        } else {
+          return 1
+        }
       },
-      set(newURL) {
-        this.$store.commit("updateDebugURL", newURL);
+      set(index) {
+        this.$store.commit('updateURL', index)
       }
     },
     ...mapState([
@@ -182,10 +195,10 @@ export default {
         map[student.id] = {
           groupId: student.groupId,
           timezone: student.timezone
-        }
+        };
       }
       for (const student of students) {
-        merge(student, map[student.id])
+        merge(student, map[student.id]);
       }
       this.$store.commit("updateResultStudents", students);
     },

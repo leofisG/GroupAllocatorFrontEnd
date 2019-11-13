@@ -1,22 +1,24 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped temporary :width="500">
+      <v-navigation-drawer v-model="drawer" app clipped :width="400">
         <v-container>
-            <v-btn width="95%" color="error" dark large @click="backDialog = true">Go back</v-btn>
-            <back-dialog
-              v-if="backDialog"
-              @close="backDialog = false"
-              @back="goBack"
-              destination="the allocation screen"
-              lossWarning="Current groupings"
-            ></back-dialog>
+          <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
+          <back-dialog
+            v-if="backDialog"
+            @close="backDialog = false"
+            @back="goBack"
+            destination="the allocation screen"
+            lossWarning="Current groupings"
+          ></back-dialog>
         </v-container>
         <v-container v-if="unallocated.length > 0">
-          <v-alert class="mx-2" type="warning">{{ unallocated.length }} unallocated students</v-alert>
+          <p>
+            <v-icon color="orange">mdi-exclamation</v-icon>
+            {{ unallocated.length }} unallocated students
+            </p>
           <v-data-table
-          style="overflow: auto; max-height: 500px"
-            dense
+            style="overflow: auto; max-height: 200px"
             show-select
             :items-per-page="-1"
             v-model="selectedUnalloc"
@@ -27,18 +29,18 @@
             class="elevation-1 mx-2"
           ></v-data-table>
           <v-container class="mx-5">
-          <v-btn
-            class="mx-5"
-            color="orange"
-            v-if="selectedUnalloc.length > 0 && groups.length > 0"
-            @click="editDialog = true"
-          >Add to Group</v-btn>
-          <v-btn
-            class="mx-5"
-            color="green"
-            v-if="selectedUnalloc.length > 0"
-            @click="newDialog = true"
-          >New group</v-btn>
+            <v-btn
+              class="mx-5"
+              color="orange"
+              v-if="selectedUnalloc.length > 0 && groups.length > 0"
+              @click="editDialog = true"
+            >Add to Group</v-btn>
+            <v-btn
+              class="mx-5"
+              color="green"
+              v-if="selectedUnalloc.length > 0"
+              @click="newDialog = true"
+            >New group</v-btn>
           </v-container>
         </v-container>
 
@@ -133,7 +135,8 @@
         <v-spacer></v-spacer>
         <v-btn
           v-if="groups.length > 0"
-          color="red"
+          color="error"
+          dark
           class="mx-2"
           @click="deleteAllDialog = true"
           justify-end
@@ -153,7 +156,7 @@
         </v-dialog>
         <v-btn
           v-if="isModified"
-          class="mx-2"
+          class="mx-2 white--text"
           color="orange"
           @click="resetDialog = true"
         >Reset groupings</v-btn>
@@ -170,11 +173,11 @@
         </v-dialog>
         <v-btn
           class="mx-2"
-          color="green darken-1"
+          color="green darken-1 white--text"
           justify-end
           @click="csvDialog = true"
         >Download CSV</v-btn>
-        <v-dialog v-model="csvDialog">
+        <v-dialog v-model="csvDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
             <v-card-actions>
@@ -283,10 +286,7 @@ export default {
   },
   computed: {
     isModified() {
-      return !isEqual(
-        this.$store.state.results,
-        this.$store.state.originalResults
-      );
+      return !isEqual(this.results, this.originalResults);
     },
     currentEditGroup() {
       if (this.editDialog == false || this.groups.length < this.editGroupId) {
@@ -315,7 +315,7 @@ export default {
         return "no_group";
       }
     },
-    ...mapState(["results"])
+    ...mapState(["results", "originalResults"])
   },
   data: function() {
     return {
@@ -360,10 +360,6 @@ export default {
         }
       ],
       unallocHeaders: [
-        {
-          text: "CID",
-          value: "id"
-        },
         {
           text: "Gender",
           value: "gender"

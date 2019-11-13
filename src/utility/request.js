@@ -8,6 +8,7 @@ const sendRequest = display => {
     };
     // eslint-disable-next-line
     console.log("Sending to URL " + store.getters.rightURL)
+    console.log(requestData)
     const xml = new XMLHttpRequest();
     xml.open(
         "POST",

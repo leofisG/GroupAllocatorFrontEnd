@@ -7,5 +7,5 @@ export const firstStudent = state => {
 }
 
 export const rightURL = state => {
-    return state.debugURL != "" ? state.debugURL : state.productionURL;
+    return state.usedURL;
 }
