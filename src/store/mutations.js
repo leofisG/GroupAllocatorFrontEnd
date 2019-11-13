@@ -23,8 +23,7 @@ export const updateResultStudents = (state, students) => {
 }
 
 export const resetResults = state => {
-    state.results = state.originalResults;
-    state.originalResults = cloneDeep(state.originalResults);
+    state.results = cloneDeep(state.originalResults);
 }
 
 export const clearFilters = state => {
@@ -70,9 +69,12 @@ export const clearWarnings = state => {
     state.warnings = [];
 }
 
-export const updateDebugURL = (state, url) => {
-    state.debugURL = url;
-}
+export const updateURL = (state, index) => {
+    if (index == 0) {
+        state.usedURL = state.productionURL
+    } else {
+        state.usedURL = state.debugURL
+    }
 
 export const authenticateUser = state => {
     state.isAuthenticated = true

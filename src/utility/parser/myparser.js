@@ -1,14 +1,14 @@
 import Papa from 'papaparse'
 import store from '../../store/store'
 
-var requiredAttributes = new Map([
+let requiredAttributes = new Map([
     ["Age" , "30"],
     ["Gender", "Male"],
     ["Current City", "London"],
     ["Country" , "United Kingdom"]
 ])
 
-var translationMap = new Map([
+let translationMap = new Map([
     ["First name", "firstName"],
     ["Last name", "lastName"],
     ["Age", "age"],
@@ -44,12 +44,12 @@ export function generate(results) {
 }
 
 function furtherParse(data, event) {
-    var attributeList = Array.from(translationMap.keys());
-    var res = []
-    var headers = []
+    let attributeList = Array.from(translationMap.keys());
+    let res = []
+    let headers = []
     data.forEach(element => {
-        var newElement = {}
-        var attribute
+        let newElement = {}
+        let attribute
         for (attribute in element) {
             if (attributeList.includes(attribute)) {
                 if (requiredAttributes.has(attribute) && element[attribute] == "") {

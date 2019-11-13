@@ -52,7 +52,6 @@
     <v-list-item v-if="currentType == &quot;Minimum of each&quot; && checkMinVal">
       <v-alert
         dense
-        outlined
         max-height="50px"
         type="error"
         style="font-size:0.8em"

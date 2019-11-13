@@ -8,6 +8,7 @@ const sendRequest = display => {
     };
     // eslint-disable-next-line
     console.log("Sending to URL " + store.getters.rightURL)
+    console.log(requestData)
     const xml = new XMLHttpRequest();
     xml.open(
         "POST",
@@ -21,6 +22,7 @@ const sendRequest = display => {
                 const response = JSON.parse(xml.responseText);
                 display.allocationMessage = display.generateResultMessage(response);
                 store.commit('storeResults', response);
+                console.log(response.students[0])
             } else {
                 // eslint-disable-next-line
                 console.log(xml.status);

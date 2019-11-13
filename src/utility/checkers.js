@@ -14,8 +14,8 @@ export const checkAll = (group, filters) => {
 }
 
 export const checkSize = (group, filters) => {
-    var status = true;
-    var message = `Group size is ${filters.groupSizeUpperBound}`
+    let status = true;
+    let message = `Group size is ${filters.groupSizeUpperBound}`
     if (filters.groupSizeLowerBound != filters.groupSizeUpperBound) {
         message = `Group size is between ${filters.groupSizeLowerBound} and ${filters.groupSizeUpperBound}`
     }
@@ -37,10 +37,10 @@ export const checkSize = (group, filters) => {
 // }
 
 export const checkAge = (group, filters) => {
-    var status = true
-    var message = `Ages differ by ${filters.ageDiff} years`
-    var minAge = Infinity;
-    var maxAge = 0;
+    let status = true
+    let message = `Ages differ by ${filters.ageDiff} years`
+    let minAge = Infinity;
+    let maxAge = 0;
     for (const student of group) {
         if (student.age < minAge) {
             minAge = student.age
@@ -63,8 +63,8 @@ export const checkAge = (group, filters) => {
 }
 
 export const checkGender = (group, filters) => {
-    var status = true;
-    var message = "Group consists of same genders";
+    let status = true;
+    let message = "Group consists of same genders";
     if ("sameGender" in filters) {
         const gender = group[0].gender;
         for (const student of group) {
@@ -74,7 +74,7 @@ export const checkGender = (group, filters) => {
             }
         }
     } else if ("genderRatio" in filters) {
-        var maleCount = 0;
+        let maleCount = 0;
         for (const student of group) {
             if (student.gender == "Male") {
                 maleCount++;
@@ -91,8 +91,8 @@ export const checkGender = (group, filters) => {
         status = ratio >= lowerBound && ratio <= upperBound;
     } else {
         //eslint-disable-next-line
-        var maleCount = 0;
-        var femaleCount = 0;
+        let maleCount = 0;
+        let femaleCount = 0;
         for (const student of group) {
             if (student.gender == "male") {
                 maleCount++;
