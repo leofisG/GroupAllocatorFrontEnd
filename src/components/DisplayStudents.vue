@@ -25,7 +25,7 @@
           justify-end
           @click="checkSubmission"
         >Submit allocation</v-btn>
-        <v-dialog v-model="warningDialog">
+        <v-dialog v-model="warningDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Error in filters!</v-card-title>
             <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
@@ -42,7 +42,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="nextDialog">
+        <v-dialog v-model="nextDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
             <v-alert class="mx-5" type="info">Have you chosen the correct filters?</v-alert>
@@ -53,7 +53,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="resultDialog">
+        <v-dialog v-model="resultDialog" max-width="40%">
           <v-card>
             <v-card-title
               v-if="!results"
@@ -69,7 +69,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="errorDialog">
+        <v-dialog v-model="errorDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Server error occured!</v-card-title>
             <v-card-text>Status: {{ error.status }}</v-card-text>
@@ -124,7 +124,7 @@ import Filters from "./Filters";
 import { mapState } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
-import { merge } from "lodash";
+import { merge, cloneDeep } from "lodash";
 
 export default {
   name: "display",
@@ -189,7 +189,7 @@ export default {
     },
     combineResults() {
       const results = this.results.students;
-      const students = this.parsedStudents;
+      const students = cloneDeep(this.parsedStudents);
       const map = {};
       for (const student of results) {
         map[student.id] = {

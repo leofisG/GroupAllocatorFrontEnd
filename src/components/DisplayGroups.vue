@@ -18,7 +18,7 @@
             {{ unallocated.length }} unallocated students
             </p>
           <v-data-table
-            style="overflow: auto; max-height: 200px"
+            style="overflow: auto; max-height: 60vh"
             show-select
             :items-per-page="-1"
             v-model="selectedUnalloc"
@@ -141,7 +141,7 @@
           @click="deleteAllDialog = true"
           justify-end
         >Delete all groups</v-btn>
-        <v-dialog v-model="deleteAllDialog" max-width="400">
+        <v-dialog v-model="deleteAllDialog" max-width="40%">
           <v-card>
             <v-card-title></v-card-title>
             <v-card-text>
@@ -160,7 +160,7 @@
           color="orange"
           @click="resetDialog = true"
         >Reset groupings</v-btn>
-        <v-dialog v-model="resetDialog">
+        <v-dialog v-model="resetDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Reset to original groupings?</v-card-title>
             <v-alert class="mx-5" type="warning">This action cannot be undone!</v-alert>
@@ -377,6 +377,7 @@ export default {
   },
   methods: {
     goBack() {
+      // Reset the results
       this.$router.push({ path: "display-students" });
     },
     generateCSV() {
