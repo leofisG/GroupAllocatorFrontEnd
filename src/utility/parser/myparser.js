@@ -68,7 +68,7 @@ function furtherParse(data, event) {
     console.log(res[0]);
     store.commit('setparsedStudents', res);
     store.commit('setParsedHeaders', headers);
-    store.commit('clearFilters');
+    store.commit('prepareFilters');
     event.$router.push({path: "display-students"})
 }
 

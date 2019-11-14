@@ -12,13 +12,13 @@ const state = {
   parsedStudents: null,
   parsedHeaders: null,
   filters: {},
-  openFilters: [
+  fixedFilters: [
     {
       type: "SizeFilter",
       name: "Size"
     }
   ],
-  availableFilters: [
+  removableFilters: [
     {
       type: "TimeZoneFilter",
       name: "Timezone"
@@ -32,6 +32,8 @@ const state = {
       name: "Gender"
     }
   ],
+  openFilters: [],
+  availableFilters: [],
   results: null,
   originalResults: null,
   warnings: [],

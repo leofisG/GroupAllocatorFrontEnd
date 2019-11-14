@@ -16,7 +16,7 @@
           <p>
             <v-icon color="orange">mdi-exclamation</v-icon>
             {{ unallocated.length }} unallocated students
-            </p>
+          </p>
           <v-data-table
             style="overflow: auto; max-height: 60vh"
             show-select
@@ -132,6 +132,7 @@
       <v-app-bar app clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Allocated groups</v-toolbar-title>
+        <v-img class="mx-2" max-width="4%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
         <v-spacer></v-spacer>
         <v-btn
           v-if="groups.length > 0"
@@ -180,6 +181,7 @@
         <v-dialog v-model="csvDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
+            <v-alert class="mx-5" v-if="unallocated.length > 0" type="error">There are unallocated students!</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="csvDialog = false">No</v-btn>
@@ -243,7 +245,12 @@
                   <v-list-item>
                     <v-list-item-content>
                       <v-list-item-title class="headline mb-1 pa-2">
-                        <v-icon medium @click="removeGroup(index)">delete</v-icon>
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on }">
+                            <v-icon v-on="on" medium @click="removeGroup(index)">delete</v-icon>
+                          </template>
+                          <span>Delete the whole group</span>
+                        </v-tooltip>
                         Group {{index + 1}}
                         <group-checker v-bind:group="group"></group-checker>
                       </v-list-item-title>
@@ -255,7 +262,12 @@
                         item-key="id"
                       >
                         <template v-slot:item.action="{ item }">
-                          <v-icon small @click="unallocateStudent(item)">delete</v-icon>
+                          <v-tooltip right>
+                            <template v-slot:activator="{ on }">
+                              <v-icon v-on="on" small @click="unallocateStudent(item)">delete</v-icon>
+                            </template>
+                            <span>Remove from group</span>
+                          </v-tooltip>
                         </template>
                       </v-data-table>
                     </v-list-item-content>

@@ -26,7 +26,9 @@ export const resetResults = state => {
     state.results = cloneDeep(state.originalResults);
 }
 
-export const clearFilters = state => {
+export const prepareFilters = state => {
+    state.openFilters = cloneDeep(state.fixedFilters);
+    state.availableFilters = cloneDeep(state.removableFilters);
     state.filters = {};
 }
 

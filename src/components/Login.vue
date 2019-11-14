@@ -1,74 +1,62 @@
 <template>
   <div id="login">
     <v-app>
-        <v-content>
-          <v-container
-            fluid
-            fill-height
-          >
-            <v-layout
-              align-center
-              justify-center
-            >
-              <v-flex
-                xs12
-                sm8
-                md4
-              >
-                <v-card class="elevation-12">
-                  <v-toolbar
-                    color="primary"
-                    dark
-                    flat
-                  >
-                    <v-toolbar-title>Login form</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                  </v-toolbar>
-                  <v-card-text>
-                    <v-form>
-                      <v-text-field
-                        label="Login"
-                        name="login"
-                        prepend-icon="person"
-                        type="text"
-                      ></v-text-field>
-
-                      <v-text-field
-                        id="password"
-                        label="Password"
-                        name="password"
-                        prepend-icon="lock"
-                        v-model="password"
-                        type="password"
-                      ></v-text-field>
-                    </v-form>
-                  </v-card-text>
+      <v-content>
+        <v-container fluid class="fill-height">
+          <v-row justify="center" class="fill-height">
+            <v-col cols="12" align="center">
+              <p class="display-4">Student Allocator</p>
+              <p class="subtitle-1 font-italic">In collaboration with</p>
+              <v-img
+                align="end"
+                max-width="30%"
+                src="../assets/Edtech/IB_LOGO_EDTECH_RGB_POSITIVE_GREEN.png"
+              ></v-img>
+            </v-col>
+            <v-col cols="4">
+              <v-card class="elevation-12">
+                <v-toolbar color="primary" dark flat>
+                  <v-spacer></v-spacer>
+                  <v-toolbar-title>Login to continue</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                </v-toolbar>
+                <v-card-text>
+                  <v-form onsubmit="return false" id="loginForm" @submit="setPassword">
+                    <v-text-field label="Login" name="login" prepend-icon="person" type="text"></v-text-field>
+                    <v-text-field
+                      id="password"
+                      label="Password"
+                      name="password"
+                      prepend-icon="lock"
+                      v-model="password"
+                      type="password"
+                    ></v-text-field>
+                  </v-form>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="primary" type="submit" form="loginForm">Login</v-btn>
+                </v-card-actions>
+              </v-card>
+              <v-dialog v-model="isPasswordWrong" max-width="400">
+                <v-card>
+                  <v-card-title class="headline justify-center">Incorrect Password</v-card-title>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="primary" @click="setPassword">Login</v-btn>
+                    <v-btn color="green" text @click="closeWrongPasswordPopUp">Try Again</v-btn>
                   </v-card-actions>
                 </v-card>
-                <v-dialog v-model="isPasswordWrong" max-width="400">
-                  <v-card>
-                    <v-card-title
-                      class="headline justify-center"
-                    >Incorrect Password</v-card-title>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn text @click="closeWrongPasswordPopUp">Try Again</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </v-flex>
-            </v-layout>
-          </v-container>
-        </v-content>
-      </v-app>
+              </v-dialog>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-content>
+    </v-app>
   </div>
 </template>
 
 <script>
-var crypto = require('crypto');
+var crypto = require("crypto");
 
 export default {
   name: "login",
@@ -80,10 +68,10 @@ export default {
   },
   methods: {
     openWrongPasswordPopUp() {
-      this.isPasswordWrong = true
+      this.isPasswordWrong = true;
     },
     closeWrongPasswordPopUp() {
-      this.isPasswordWrong = false
+      this.isPasswordWrong = false;
     },
     setPassword() {
       const correctPasswordHash = "19d8ab3b0210ddf9a86771ffc38d0a9d";
@@ -92,11 +80,14 @@ export default {
         this.$store.commit("authenticateUser");
         this.$router.push({ path: "uploadcsv" });
       } else {
-        this.openWrongPasswordPopUp()
+        this.openWrongPasswordPopUp();
       }
     },
     hashMD5(password) {
-      return crypto.createHash('md5').update(password).digest("hex");
+      return crypto
+        .createHash("md5")
+        .update(password)
+        .digest("hex");
     }
   }
 };

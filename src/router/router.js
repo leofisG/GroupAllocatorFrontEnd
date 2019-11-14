@@ -16,7 +16,14 @@ export default new Router({
     {
         path: '/',
         name: 'Login',
-        component: Login
+        component: Login,
+        beforeEnter: (to, from, next) => {
+            if (store.state.isAuthenticated) {
+                next({ name: 'UploadCSV' })
+            } else {
+                next()
+            }
+        }
     },
     {
         path: '/uploadcsv',
@@ -37,8 +44,10 @@ export default new Router({
         beforeEnter: (to, from, next) => {
             if (store.state.isAuthenticated && store.state.parsedStudents) {
                 next()
-            } else {
+            } else if (store.state.isAuthenticated) {
                 next({ name: 'UploadCSV' })
+            } else {
+                next({ name: 'Login' })
             }
         }
     },
@@ -49,8 +58,10 @@ export default new Router({
         beforeEnter: (to, from, next) => {
             if (store.state.isAuthenticated && store.state.results) {
                 next()
-            } else {
+            } else if (store.state.isAuthenticated) {
                 next({ name: 'UploadCSV' })
+            } else {
+                next({ name: 'Login' })
             }
         }
     },

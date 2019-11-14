@@ -1,9 +1,9 @@
 export const checkAll = (group, filters) => {
     const validities = [];
     validities.push(checkSize(group, filters));
-    // if ("timezoneDiff" in filters) {
-    //     validities.push(checkTimeZone(group, filters))
-    // }
+    if ("timezoneDiff" in filters) {
+        validities.push(checkTimeZone(group, filters))
+    }
     if ("ageDiff" in filters) {
         validities.push(checkAge(group, filters));
     }
@@ -31,10 +31,35 @@ export const checkSize = (group, filters) => {
     }
 }
 
-// export const checkTimeZone = (group, filters) => {
-//     //TODO
-//     console.log("Not implemented")
-// }
+export const checkTimeZone = (group, filters) => {
+    const maxDifference = filters.timezoneDiff;
+    let status = true;
+    let message = "Same timezones"
+    if (maxDifference > 0) {
+        message = `Timezones differ by ${maxDifference} hours`;
+    }
+    const currentDiffs = new Set();
+    for (const student of group) {
+        console.log(student.timezone)
+        const timezone = student.timezone || 0
+        for (const existing of currentDiffs) {
+            if (getDiff(timezone, existing) > maxDifference) {
+                status = false;
+                break;
+            }
+        }
+        currentDiffs.add(timezone);
+    }
+    return {
+        status,
+        message
+    }
+}
+
+const getDiff = (zone1, zone2) => {
+    const diff = Math.abs(zone1 - zone2);
+    return Math.min(diff, 24 - diff);
+}
 
 export const checkAge = (group, filters) => {
     let status = true
@@ -94,7 +119,7 @@ export const checkGender = (group, filters) => {
         let maleCount = 0;
         let femaleCount = 0;
         for (const student of group) {
-            if (student.gender == "male") {
+            if (student.gender == "Male") {
                 maleCount++;
             } else {
                 femaleCount++;

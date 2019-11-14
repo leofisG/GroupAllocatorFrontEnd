@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="on">
+  <v-dialog v-model="on" max-width="40%">
     <v-card>
       <v-card-title class="headline justify-center">Go back to {{ destination }}?</v-card-title>
       <v-alert class="mx-5" type="warning">{{ lossWarning }} will be lost if you do!</v-alert>

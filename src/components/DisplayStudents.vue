@@ -2,9 +2,8 @@
   <div class="display">
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
-        <v-list dense>
-          <v-list-item>
-            <v-btn width="100%" color="error" dark large @click="backDialog = true">Go back</v-btn>
+        <v-container>
+            <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
             <back-dialog
               v-if="backDialog"
               @close="backDialog = false"
@@ -12,13 +11,13 @@
               destination="the upload screen"
               lossWarning="The current file"
             ></back-dialog>
-          </v-list-item>
-        </v-list>
+        </v-container>
         <Filters></Filters>
       </v-navigation-drawer>
       <v-app-bar app fixed clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>Student Allocator</v-toolbar-title>
+        <v-img class="mx-2" max-width="4%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
         <v-spacer></v-spacer>
         <v-btn
           color="green darken-1 white--text"
@@ -178,7 +177,7 @@ export default {
       this.resultDialog = true;
     },
     goBack() {
-      this.$router.push({ path: "/" });
+      this.$router.push({ path: "/uploadcsv" });
     },
     cancelResults() {
       this.resultDialog = false;
