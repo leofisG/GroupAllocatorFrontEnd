@@ -87,6 +87,10 @@ export const checkAge = (group, filters) => {
     }
 }
 
+Number.prototype.round = function(places) {
+    return +(Math.round(this + "e+" + places)  + "e-" + places);
+}
+
 export const checkGender = (group, filters) => {
     let status = true;
     let message = "Group consists of same genders";
@@ -106,8 +110,8 @@ export const checkGender = (group, filters) => {
             }
         }
         const ratio = maleCount / group.length
-        const lowerBound = filters.genderRatio - filters.genderErrorMargin;
-        const upperBound = filters.genderRatio + filters.genderErrorMargin;
+        const lowerBound = (filters.genderRatio - filters.genderErrorMargin).round(2);
+        const upperBound = (filters.genderRatio + filters.genderErrorMargin).round(2);
         if (lowerBound == upperBound) {
             message = `Male:Female ratio is ${lowerBound}`
         } else {

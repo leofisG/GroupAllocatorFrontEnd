@@ -232,7 +232,7 @@
           </v-row>
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
             <v-col
-              cols="12"
+              cols="3"
               sm="6"
               md="4"
               v-for="(group, index) in groups"

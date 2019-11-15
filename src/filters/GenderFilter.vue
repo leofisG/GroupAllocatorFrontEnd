@@ -137,8 +137,9 @@ export default {
   mounted: function() {
     if ("genderRatio" in this.filters) {
       this.currentType = "Ratio-based";
-      this.genderRatio = this.filters.genderRatio;
-      this.genderErrorMargin = this.filters.genderErrorMargin;
+      // Convert back from decimal to percentage value
+      this.genderRatio = Math.round(this.filters.genderRatio * 100);
+      this.genderErrorMargin = Math.round(this.filters.genderErrorMargin * 100);
     } else if ("minMale" in this.filters) {
       this.currentType = "Minimum of each";
       this.minMale = this.filters.minMale;
