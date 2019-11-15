@@ -2,7 +2,7 @@
   <div id="login">
     <v-app>
       <v-content>
-        <v-container fluid class="">
+        <v-container fluid>
           <v-row justify="center">
             <v-col cols="12" align="center">
               <h2 class="display-2">Student Allocator</h2>
