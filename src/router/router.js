@@ -14,7 +14,7 @@ export default new Router({
   mode: 'history',
   routes: [
     {
-        path: '/',
+        path: '/login',
         name: 'Login',
         component: Login,
         beforeEnter: (to, from, next) => {
@@ -65,5 +65,9 @@ export default new Router({
             }
         }
     },
+    {   // Redirect to login page for all other URLs.
+        path: '*',
+        redirect: 'login'
+    }
   ]
 })
