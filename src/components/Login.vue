@@ -2,17 +2,19 @@
   <div id="login">
     <v-app>
       <v-content>
-        <v-container fluid class="fill-height">
-          <v-row justify="center" class="fill-height">
+        <v-container fluid>
+          <v-row justify="center">
             <v-col cols="12" align="center">
-              <p class="display-4">Student Allocator</p>
-              <p class="subtitle-1 font-italic">In collaboration with</p>
+              <h2 class="display-2">Student Allocator</h2>
+              <p class="subtitle-1 font-italic" id="in-collaboration">In collaboration with</p>
               <v-img
                 align="end"
                 max-width="30%"
                 src="../assets/Edtech/IB_LOGO_EDTECH_RGB_POSITIVE_GREEN.png"
               ></v-img>
             </v-col>
+          </v-row>
+          <v-row justify="center" class="fill-height">
             <v-col cols="4">
               <v-card class="elevation-12">
                 <v-toolbar color="primary" dark flat>
@@ -108,5 +110,10 @@ li {
 }
 a {
   color: #42b983;
+}
+
+#in-collaboration {
+  margin-top: 5px;
+  margin-bottom: 0;
 }
 </style>
