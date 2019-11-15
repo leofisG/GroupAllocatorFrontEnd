@@ -2,23 +2,19 @@
   <div id="upload">
     <v-app>
       <v-content>
-        <v-row align="start" justify="start">
+        <v-row align="center">
           <v-col cols="3">
-            <v-row align="baseline">
-              <p class="display-3 mx-3">Student Allocator</p>
-              <p align="center" justify="center">with</p>
-            </v-row>
+            <h2 class="display-1 mx-3">Student Allocator</h2>
           </v-col>
-          <v-col cols="9">
+          <v-col cols="1">
+              <p align="center" justify="center">with</p>
+          </v-col>
+          <v-col cols="8">
             <v-img max-width="9%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
           </v-col>
         </v-row>
-        <v-container fluid>
           <v-row justify="center">
-            <p class="display-2">A quick guide:</p>
-          </v-row>
-          <v-row justify="center">
-            <v-col cols="6" align="center" justify="center">
+            <v-col cols="6" align="left" justify="left">
               <v-carousel v-model="tutorialCarousel">
                 <v-carousel-item>
                   <v-sheet color="white lighten-1" height="100%" tile>
@@ -96,7 +92,7 @@
                     </v-row>
                   </v-sheet>
                 </v-carousel-item>
-                                <v-carousel-item>
+                <v-carousel-item>
                   <v-sheet color="white" height="100%" tile>
                     <v-row align="start" justify="center">
                       <div class="display-1 black--text">Download when ready!</div>
@@ -108,9 +104,7 @@
                 </v-carousel-item>
               </v-carousel>
             </v-col>
-          </v-row>
-          <v-row justify="center">
-            <v-col cols="6">
+            <v-col cols="4" justify="center">
               <v-card class="elevation-12">
                 <v-toolbar color="primary" dark flat>
                   <v-spacer></v-spacer>
@@ -141,7 +135,6 @@
               </v-card>
             </v-col>
           </v-row>
-        </v-container>
       </v-content>
     </v-app>
   </div>
