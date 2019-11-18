@@ -50,12 +50,7 @@
       </v-text-field>
     </v-list-item>
     <v-list-item v-if="currentType == &quot;Minimum of each&quot; && checkMinVal">
-      <v-alert
-        dense
-        max-height="50px"
-        type="error"
-        style="font-size:0.8em"
-      >{{minErrorMessage}}</v-alert>
+      <v-alert dense max-height="50px" type="error" style="font-size:0.8em">{{minErrorMessage}}</v-alert>
     </v-list-item>
   </v-card>
 </template>
@@ -111,6 +106,7 @@ export default {
     },
     filters: function() {
       this.checkMargin();
+      this.checkMin();
     }
   },
   computed: {
@@ -152,6 +148,7 @@ export default {
   methods: {
     remove() {
       this.$store.commit("removeFromFilter", this.values);
+      this.$store.commit("removeWarning", "Gender");
       this.$store.commit("removeFilter", "GenderFilter");
     },
     checkMargin() {
@@ -181,10 +178,12 @@ export default {
     },
     checkMin() {
       console.log("in checkmin");
-      if (this.checkMinVal) {
-        this.$store.commit("addWarning", "Gender");
-      } else {
-        this.$store.commit("removeWarning", "Gender");
+      if (this.currentType == "Minimum of each") {
+        if (this.checkMinVal) {
+          this.$store.commit("addWarning", "Gender");
+        } else {
+          this.$store.commit("removeWarning", "Gender");
+        }
       }
     },
     updateFilters() {
