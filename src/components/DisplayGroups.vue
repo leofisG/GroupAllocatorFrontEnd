@@ -32,13 +32,13 @@
             <v-btn
               class="mx-5"
               color="orange"
-              v-if="selectedUnalloc.length > 0 && groups.length > 0"
+              :disabled="addButtonDisabled"
               @click="editDialog = true"
             >Add to Group</v-btn>
             <v-btn
               class="mx-5"
               color="green"
-              v-if="selectedUnalloc.length > 0"
+              :disabled="newButtonDisabled"
               @click="newDialog = true"
             >New group</v-btn>
           </v-container>
@@ -181,7 +181,11 @@
         <v-dialog v-model="csvDialog" max-width="40%">
           <v-card>
             <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
-            <v-alert class="mx-5" v-if="unallocated.length > 0" type="error">There are unallocated students!</v-alert>
+            <v-alert
+              class="mx-5"
+              v-if="unallocated.length > 0"
+              type="error"
+            >There are unallocated students!</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="red" text @click="csvDialog = false">No</v-btn>
@@ -297,6 +301,12 @@ export default {
     "group-checker": Checker
   },
   computed: {
+    addButtonDisabled() {
+      return this.selectedUnalloc.length == 0 || this.groups.length == 0;
+    },
+    newButtonDisabled() {
+      return this.selectedUnalloc.length == 0;
+    },
     isModified() {
       return !isEqual(this.results, this.originalResults);
     },
@@ -373,6 +383,10 @@ export default {
       ],
       unallocHeaders: [
         {
+          text: "CID",
+          value: "id"
+        },
+        {
           text: "Gender",
           value: "gender"
         },
@@ -383,6 +397,10 @@ export default {
         {
           text: "Country",
           value: "country"
+        },
+        {
+          text: "UTC",
+          value: "timezoneOffset"
         }
       ]
     };
@@ -419,6 +437,7 @@ export default {
     resetGroupings() {
       this.$store.commit("resetResults");
       this.generateGroups();
+      this.selectedUnalloc = this.selectedUnalloc.filter(e => e.groupId == 0);
       this.resetDialog = false;
     },
     unallocateStudent(student) {

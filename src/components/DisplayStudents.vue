@@ -193,7 +193,8 @@ export default {
       for (const student of results) {
         map[student.id] = {
           groupId: student.groupId,
-          timezone: student.timezone
+          timezone: student.timezone,
+          timezoneOffset: student.timezone > 0 ? "+" + student.timezone.toString() : student.timezone.toString()
         };
       }
       for (const student of students) {
