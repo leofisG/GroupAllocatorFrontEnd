@@ -62,7 +62,7 @@ export default {
     updateFilters() {
       const values =
             {
-              quant: `${this.minQuant}, ${this.filter.groupSizeUpperBound}`,
+              quant: `${this.minQuant}, ${this.filters.groupSizeUpperBound}`,
             };
       this.$store.commit("updateFilters", values);
     }

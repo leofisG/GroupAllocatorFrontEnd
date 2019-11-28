@@ -1,6 +1,10 @@
 <template>
   <v-card width="100%">
-    <v-card-title class="justify-center">Country Exclusion</v-card-title>
+    <v-card-title class="justify-center">Country Exclusion
+      <v-btn @click="this.remove" absolute right fab dark x-small>
+        <v-icon dark>mdi-minus</v-icon>
+      </v-btn>
+    </v-card-title>
     <v-card-text>
       Specify the maximum number of students that can be from the same country 
       here.
