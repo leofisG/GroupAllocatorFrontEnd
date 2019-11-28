@@ -91,10 +91,9 @@
                 md="6"
                 lg="4"
                 xl="3"
-                v-for="(group, index) in groups"
-                :key="index"
+                v-for="group in groups"
+                :key="group.groupId"
                 :group="group"
-                :index="index"
               >
                 <v-card height="100%">
                   <v-list flat>
@@ -103,21 +102,21 @@
                         <v-list-item-title class="headline mb-1 pa-2">
                           <v-tooltip left>
                             <template v-slot:activator="{ on }">
-                              <v-icon v-on="on" medium @click="removeGroup(index)">delete</v-icon>
+                              <v-icon v-on="on" medium @click="removeGroup(group.groupId)">delete</v-icon>
                             </template>
                             <span>Delete the whole group</span>
                           </v-tooltip>
-                          Group {{index + 1}}
-                          <group-checker v-bind:group="group"></group-checker>
+                          Group {{ group.groupId }}
+                          <group-checker v-bind:group="group.students"></group-checker>
                         </v-list-item-title>
                         <v-data-table
                           dense
                           :headers="headers"
-                          :items="group"
+                          :items="group.students"
                           hide-default-footer
                           item-key="id"
                         >
-                        <!-- Implement a delete button in this slot -->
+                          <!-- Implement a delete button in this slot -->
                           <template v-slot:item.action="{ item }">
                             <v-tooltip right>
                               <template v-slot:activator="{ on }">
@@ -127,9 +126,7 @@
                             </v-tooltip>
                           </template>
                           <!-- Custom country/timezone display -->
-                          <template v-slot:item.display="{ item }">
-                            {{ getLocationDisplay(item) }}
-                          </template>
+                          <template v-slot:item.display="{ item }">{{ getLocationDisplay(item) }}</template>
                         </v-data-table>
                       </v-list-item-content>
                     </v-list-item>
@@ -169,7 +166,10 @@
                   hide-default-footer
                   item-key="id"
                   class="elevation-1 mx-5"
-                ></v-data-table>
+                >
+                  <!-- Custom country/timezone display -->
+                  <template v-slot:item.display="{ item }">{{ getLocationDisplay(item) }}</template>
+                </v-data-table>
               </v-col>
             </v-row>
           </v-container>
@@ -323,7 +323,9 @@ export default {
       if (this.editDialog == false || this.groups.length < this.editGroupId) {
         return [];
       } else {
-        return this.groups[this.editGroupId - 1].concat(this.selectedUnalloc);
+        return this.groups[this.editGroupId - 1].students.concat(
+          this.selectedUnalloc
+        );
       }
     },
     newGroupNumbers() {
@@ -433,18 +435,21 @@ export default {
       const unallocated = [];
       let groups = [];
       for (let i = 0; i < amount; i++) {
-        groups.push([]);
+        groups.push({
+          groupId: i + 1,
+          students: []
+        });
       }
       for (const student of students) {
         if (student.groupId == 0) {
           unallocated.push(student);
         } else {
-          groups[student.groupId - 1].push(student);
+          groups[student.groupId - 1].students.push(student);
         }
       }
-      groups = groups.filter(g => g.length > 0);
+      groups = groups.filter(g => g.students.length > 0);
       this.unallocated = unallocated;
-      // this.groups = groups;
+      this.groups = [];
       for (const group of groups) {
         await this.sleep(10);
         this.groups.push(group);
@@ -459,7 +464,7 @@ export default {
     },
     unallocateStudent(student) {
       this.selectedStudent = student;
-      if (this.groups[student.groupId - 1].length == 1) {
+      if (this.groups[student.groupId - 1].students.length == 1) {
         this.lastWarning = true;
       } else {
         this.lastWarning = false;
@@ -476,22 +481,20 @@ export default {
       this.groups = [];
       this.deleteAllDialog = false;
       this.deletionOccured = false;
-      console.log(this.unallocated);
     },
-    removeGroup(index) {
-      this.selectedGroupId = index;
+    removeGroup(groupId) {
+      this.selectedGroupId = groupId;
       this.deleteGroupDialog = true;
     },
     confirmUnalloc() {
       const student = this.selectedStudent;
-      console.log(student);
       this.$set(
-        this.groups,
-        student.groupId - 1,
-        this.groups[student.groupId - 1].filter(e => e != student)
+        this.groups[student.groupId - 1],
+        "students",
+        this.groups[student.groupId - 1].students.filter(e => e != student)
       );
       // If group is now empty, remove and shift everyone down
-      if (this.groups[student.groupId - 1].length == 0) {
+      if (this.groups[student.groupId - 1].students.length == 0) {
         this.shiftGroups(student.groupId - 1);
       }
       student.groupId = 0;
@@ -499,31 +502,35 @@ export default {
       this.unallocStudentDialog = false;
     },
     confirmGroupDelete() {
-      const index = this.selectedGroupId;
-      // The index is 0 indexed
-      const group = this.groups[index];
-      for (const student of group) {
+      const groupId = this.selectedGroupId;
+      // The index is 1 indexed (Matches group number)
+      const group = this.groups[groupId - 1];
+      for (const student of group.students) {
         student.groupId = 0;
       }
       // Add students to unallocated
-      this.unallocated.push(...group);
+      this.unallocated.push(...group.students);
       // Shift groups down
-      this.shiftGroups(index);
+      this.shiftGroups(groupId);
       this.deleteGroupDialog = false;
     },
-    shiftGroups(id) {
-      this.$delete(this.groups, id);
-      for (let i = id; i < this.groups.length; i++) {
+    shiftGroups(groupId) {
+      // Id is 1 indexed
+      const index = groupId - 1;
+      this.$delete(this.groups, index);
+      for (let i = index; i < this.groups.length; i++) {
         const group = this.groups[i];
-        for (const student of group) {
+        group.groupId = group.groupId - 1;
+        for (const student of group.students) {
           student.groupId = student.groupId - 1;
         }
       }
     },
-    shiftGroupsUp(id) {
-      for (let i = id; i < this.groups.length; i++) {
+    shiftGroupsUp(groupId) {
+      for (let i = groupId; i < this.groups.length; i++) {
         const group = this.groups[i];
-        for (const student of group) {
+        group.groupId = group.groupId + 1;
+        for (const student of group.students) {
           student.groupId = student.groupId + 1;
         }
       }
@@ -534,12 +541,12 @@ export default {
         student.groupId = this.editGroupId;
       }
       // Replace the group with the new one
-      this.groups[this.editGroupId - 1] = this.currentEditGroup;
+      this.groups[this.editGroupId - 1].students = this.currentEditGroup;
       // Reset selectedUnalloc
       this.selectedUnalloc = [];
       // Remove the students from the unallocated list
       this.unallocated = this.unallocated.filter(
-        e => !this.groups[this.editGroupId - 1].includes(e)
+        e => !this.groups[this.editGroupId - 1].students.includes(e)
       );
       this.editDialog = false;
     },
@@ -548,25 +555,28 @@ export default {
       for (const student of this.selectedUnalloc) {
         student.groupId = this.editGroupId;
       }
+      const newGroup = {
+        groupId: this.editGroupId,
+        students: this.selectedUnalloc
+      };
       // Add the new group
-      this.groups.splice(this.editGroupId - 1, 0, this.selectedUnalloc);
-      console.log(this.groups);
+      this.groups.splice(this.editGroupId - 1, 0, newGroup);
       // Reset selectedUnAlloc
       this.selectedUnalloc = [];
       // Shift everyone else up
       this.shiftGroupsUp(this.editGroupId);
       // Remove the students from the unallocated list
       this.unallocated = this.unallocated.filter(
-        e => !this.groups[this.editGroupId - 1].includes(e)
+        e => !this.groups[this.editGroupId - 1].students.includes(e)
       );
       this.newDialog = false;
     },
     getLocationDisplay(student) {
       let timezone = "";
       if (student.timezone > 0) {
-        timezone = `(UTC +${student.timezone})`
+        timezone = `(UTC +${student.timezone})`;
       } else if (student.timezone < 0) {
-        timezone = `(UTC ${student.timezone})`
+        timezone = `(UTC ${student.timezone})`;
       } else if (student.timezone == 0) {
         timezone = "(UTC)";
       }
