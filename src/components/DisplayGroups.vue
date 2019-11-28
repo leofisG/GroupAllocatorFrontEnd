@@ -43,85 +43,6 @@
             >New group</v-btn>
           </v-container>
         </v-container>
-
-        <v-dialog v-model="editDialog">
-          <v-card>
-            <v-card-title class="headline justify-center">Select a group to add to</v-card-title>
-            <v-container fluid>
-              <v-row align="center">
-                <v-col cols="12">
-                  <v-select
-                    class="mx-5"
-                    v-model="editGroupId"
-                    :items="groupNumbers"
-                    label="Group number"
-                  ></v-select>
-                </v-col>
-              </v-row>
-              <v-row align="center">
-                <v-col cols="12">
-                  <b>The new group:</b>
-                  <group-checker v-bind:group="currentEditGroup"></group-checker>
-                </v-col>
-              </v-row>
-              <v-row align="center">
-                <v-col cols="12">
-                  <v-data-table
-                    :headers="unallocHeaders"
-                    :items="currentEditGroup"
-                    hide-default-footer
-                    item-key="id"
-                    class="elevation-1 mx-5"
-                  ></v-data-table>
-                </v-col>
-              </v-row>
-            </v-container>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" @click="editDialog = false" text>Cancel</v-btn>
-              <v-btn color="green darken-1" text @click="confirmGroupEdit">Confirm</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="newDialog">
-          <v-card>
-            <v-card-title class="headline justify-center">Select the new group ID</v-card-title>
-            <v-container fluid>
-              <v-row align="center">
-                <v-col cols="12">
-                  <v-select
-                    class="mx-5"
-                    v-model="editGroupId"
-                    :items="newGroupNumbers"
-                    label="Group number"
-                  ></v-select>
-                </v-col>
-              </v-row>
-              <v-row align="center">
-                <v-col cols="12">
-                  <b>The new group:</b>
-                  <group-checker v-bind:group="selectedUnalloc"></group-checker>
-                </v-col>
-              </v-row>
-              <v-row align="center">
-                <v-col cols="12">
-                  <v-data-table
-                    :headers="unallocHeaders"
-                    :items="selectedUnalloc"
-                    hide-default-footer
-                    item-key="id"
-                    class="elevation-1 mx-5"
-                  ></v-data-table>
-                </v-col>
-              </v-row>
-            </v-container>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" @click="newDialog = false" text>Cancel</v-btn>
-              <v-btn color="green darken-1" text @click="confirmNewGroup">Confirm</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
         <v-alert
           v-if="unallocated.length == 0"
           class="mx-5"
@@ -135,153 +56,241 @@
         <v-toolbar-title>Allocated groups</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn
-          v-if="groups.length > 0"
+          v-if="finishedAllocation && groups.length > 0"
           color="error"
           dark
           class="mx-2"
           @click="deleteAllDialog = true"
           justify-end
         >Delete all groups</v-btn>
-        <v-dialog v-model="deleteAllDialog" max-width="40%">
-          <v-card>
-            <v-card-title></v-card-title>
-            <v-card-text>
-              <v-alert class="mx-5" type="warning">Remove all groups?</v-alert>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="green darken-1" text @click="deleteAllDialog = false">No</v-btn>
-              <v-btn color="red" text @click="removeAllGroups">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
         <v-btn
-          v-if="isModified"
+          v-if="finishedAllocation && isModified"
           class="mx-2 white--text"
           color="orange"
           @click="resetDialog = true"
         >Reset groupings</v-btn>
-        <v-dialog v-model="resetDialog" max-width="40%">
-          <v-card>
-            <v-card-title class="headline justify-center">Reset to original groupings?</v-card-title>
-            <v-alert class="mx-5" type="warning">This action cannot be undone!</v-alert>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="green darken-1" text @click="resetDialog = false">No</v-btn>
-              <v-btn color="red" text @click="resetGroupings">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
         <v-btn
           class="mx-2"
           color="green darken-1 white--text"
           justify-end
           @click="csvDialog = true"
         >Download CSV</v-btn>
-        <v-dialog v-model="csvDialog" max-width="40%">
-          <v-card>
-            <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
-            <v-alert
-              class="mx-5"
-              v-if="unallocated.length > 0"
-              type="error"
-            >There are unallocated students!</v-alert>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" text @click="csvDialog = false">No</v-btn>
-              <v-btn color="green darken-1" text @click="generateCSV">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </v-app-bar>
       <v-content>
-        <v-dialog v-model="unallocStudentDialog" max-width="600">
-          <v-card>
-            <v-card-title justify-center>
-              <v-alert
-                width="100%"
-                class="mx-5"
-                type="info"
-              >Remove student with ID {{ selectedStudentId }} from Group {{ selectStudentGroupId }}?</v-alert>
-            </v-card-title>
-            <v-alert
-              class="mx-5"
-              type="warning"
-              v-if="lastWarning"
-            >Warning, removing this student will delete the group!</v-alert>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="green darken-1" text @click="unallocStudentDialog=false">No</v-btn>
-              <v-btn color="red" text @click="confirmUnalloc">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="deleteGroupDialog" max-width="400">
-          <v-card>
-            <v-card-title justify-center>
-              <v-alert width="100%" class="mx-5" type="info">Remove group {{ selectedGroupId + 1 }}?</v-alert>
-            </v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="green darken-1" text @click="deleteGroupDialog=false">No</v-btn>
-              <v-btn color="red" text @click="confirmGroupDelete">Yes</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-container class="fill-height" fluid>
+        <v-container class="fill-height mx-4" fluid>
           <v-row v-if="groups.length == 0" align="center" class="fill-height">
             <v-col cols="12" class="fill-height">
               <v-alert type="warning">No Groups have been allocated!</v-alert>
             </v-col>
           </v-row>
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
-            <v-col
-              cols="3"
-              sm="6"
-              md="4"
-              v-for="(group, index) in groups"
-              :key="index"
-              :group="group"
-              :index="index"
-            >
-              <v-card height="100%">
-                <v-list flat>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="headline mb-1 pa-2">
-                        <v-tooltip left>
-                          <template v-slot:activator="{ on }">
-                            <v-icon v-on="on" medium @click="removeGroup(index)">delete</v-icon>
-                          </template>
-                          <span>Delete the whole group</span>
-                        </v-tooltip>
-                        Group {{index + 1}}
-                        <group-checker v-bind:group="group"></group-checker>
-                      </v-list-item-title>
-                      <v-data-table
-                        dense
-                        :headers="headers"
-                        :items="group"
-                        hide-default-footer
-                        item-key="id"
-                      >
-                        <template v-slot:item.action="{ item }">
-                          <v-tooltip right>
+            <transition-group name="slide-fade" tag="div" class="row layout wrap">
+              <v-col
+                cols="3"
+                sm="12"
+                md="6"
+                lg="4"
+                xl="3"
+                v-for="(group, index) in groups"
+                :key="index"
+                :group="group"
+                :index="index"
+              >
+                <v-card height="100%">
+                  <v-list flat>
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="headline mb-1 pa-2">
+                          <v-tooltip left>
                             <template v-slot:activator="{ on }">
-                              <v-icon v-on="on" small @click="unallocateStudent(item)">delete</v-icon>
+                              <v-icon v-on="on" medium @click="removeGroup(index)">delete</v-icon>
                             </template>
-                            <span>Remove from group</span>
+                            <span>Delete the whole group</span>
                           </v-tooltip>
-                        </template>
-                      </v-data-table>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-col>
+                          Group {{index + 1}}
+                          <group-checker v-bind:group="group"></group-checker>
+                        </v-list-item-title>
+                        <v-data-table
+                          dense
+                          :headers="headers"
+                          :items="group"
+                          hide-default-footer
+                          item-key="id"
+                        >
+                        <!-- Implement a delete button in this slot -->
+                          <template v-slot:item.action="{ item }">
+                            <v-tooltip right>
+                              <template v-slot:activator="{ on }">
+                                <v-icon v-on="on" small @click="unallocateStudent(item)">delete</v-icon>
+                              </template>
+                              <span>Remove from group</span>
+                            </v-tooltip>
+                          </template>
+                          <!-- Custom country/timezone display -->
+                          <template v-slot:item.display="{ item }">
+                            {{ getLocationDisplay(item) }}
+                          </template>
+                        </v-data-table>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-col>
+            </transition-group>
           </v-row>
         </v-container>
       </v-content>
+      <!-- Dialogs -->
+      <v-dialog v-model="editDialog">
+        <v-card>
+          <v-card-title class="headline justify-center">Select a group to add to</v-card-title>
+          <v-container fluid>
+            <v-row align="center">
+              <v-col cols="12">
+                <v-select
+                  class="mx-5"
+                  v-model="editGroupId"
+                  :items="groupNumbers"
+                  label="Group number"
+                ></v-select>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="12">
+                <b>The new group:</b>
+                <group-checker v-bind:group="currentEditGroup"></group-checker>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="12">
+                <v-data-table
+                  :headers="unallocHeaders"
+                  :items="currentEditGroup"
+                  hide-default-footer
+                  item-key="id"
+                  class="elevation-1 mx-5"
+                ></v-data-table>
+              </v-col>
+            </v-row>
+          </v-container>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" @click="editDialog = false" text>Cancel</v-btn>
+            <v-btn color="green darken-1" text @click="confirmGroupEdit">Confirm</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="newDialog">
+        <v-card>
+          <v-card-title class="headline justify-center">Select the new group ID</v-card-title>
+          <v-container fluid>
+            <v-row align="center">
+              <v-col cols="12">
+                <v-select
+                  class="mx-5"
+                  v-model="editGroupId"
+                  :items="newGroupNumbers"
+                  label="Group number"
+                ></v-select>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="12">
+                <b>The new group:</b>
+                <group-checker v-bind:group="selectedUnalloc"></group-checker>
+              </v-col>
+            </v-row>
+            <v-row align="center">
+              <v-col cols="12">
+                <v-data-table
+                  :headers="unallocHeaders"
+                  :items="selectedUnalloc"
+                  hide-default-footer
+                  item-key="id"
+                  class="elevation-1 mx-5"
+                ></v-data-table>
+              </v-col>
+            </v-row>
+          </v-container>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" @click="newDialog = false" text>Cancel</v-btn>
+            <v-btn color="green darken-1" text @click="confirmNewGroup">Confirm</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="deleteAllDialog" max-width="40%">
+        <v-card>
+          <v-card-title></v-card-title>
+          <v-card-text>
+            <v-alert class="mx-5" type="warning">Remove all groups?</v-alert>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="deleteAllDialog = false">No</v-btn>
+            <v-btn color="red" text @click="removeAllGroups">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="resetDialog" max-width="40%">
+        <v-card>
+          <v-card-title class="headline justify-center">Reset to original groupings?</v-card-title>
+          <v-alert class="mx-5" type="warning">This action cannot be undone!</v-alert>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="resetDialog = false">No</v-btn>
+            <v-btn color="red" text @click="resetGroupings">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="csvDialog" max-width="40%">
+        <v-card>
+          <v-card-title class="headline justify-center">Download grouping CSV?</v-card-title>
+          <v-alert
+            class="mx-5"
+            v-if="unallocated.length > 0"
+            type="error"
+          >There are unallocated students!</v-alert>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="csvDialog = false">No</v-btn>
+            <v-btn color="green darken-1" text @click="generateCSV">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="unallocStudentDialog" max-width="600">
+        <v-card>
+          <v-card-title justify-center>
+            <v-alert
+              width="100%"
+              class="mx-5"
+              type="info"
+            >Remove student with ID {{ selectedStudentId }} from Group {{ selectStudentGroupId }}?</v-alert>
+          </v-card-title>
+          <v-alert
+            class="mx-5"
+            type="warning"
+            v-if="lastWarning"
+          >Warning, removing this student will delete the group!</v-alert>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="unallocStudentDialog=false">No</v-btn>
+            <v-btn color="red" text @click="confirmUnalloc">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="deleteGroupDialog" max-width="400">
+        <v-card>
+          <v-card-title justify-center>
+            <v-alert width="100%" class="mx-5" type="info">Remove group {{ selectedGroupId + 1 }}?</v-alert>
+          </v-card-title>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="deleteGroupDialog=false">No</v-btn>
+            <v-btn color="red" text @click="confirmGroupDelete">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-app>
   </div>
 </template>
@@ -353,11 +362,14 @@ export default {
       editGroupId: 1,
       newDialog: false,
       deleteAllDialog: false,
+      deletionOccured: false,
+      finishedAllocation: false,
       selectedStudent: null,
       selectedGroupId: null,
       groups: [],
       unallocated: [],
       selectedUnalloc: [],
+      active: [],
       headers: [
         {
           text: "CID",
@@ -373,7 +385,7 @@ export default {
         },
         {
           text: "Country",
-          value: "country"
+          value: "display"
         },
         {
           text: "",
@@ -396,16 +408,15 @@ export default {
         },
         {
           text: "Country",
-          value: "country"
-        },
-        {
-          text: "UTC",
-          value: "timezoneOffset"
+          value: "display"
         }
       ]
     };
   },
   methods: {
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
     goBack() {
       // Reset the results
       this.$router.push({ path: "display-students" });
@@ -415,7 +426,8 @@ export default {
       saveAs(blob, "results.csv");
       this.csvDialog = false;
     },
-    generateGroups() {
+    async generateGroups() {
+      this.finishedAllocation = false;
       const students = this.results.students;
       const amount = this.results.numOfGroup;
       const unallocated = [];
@@ -431,8 +443,13 @@ export default {
         }
       }
       groups = groups.filter(g => g.length > 0);
-      this.groups = groups;
       this.unallocated = unallocated;
+      // this.groups = groups;
+      for (const group of groups) {
+        await this.sleep(10);
+        this.groups.push(group);
+      }
+      this.finishedAllocation = true;
     },
     resetGroupings() {
       this.$store.commit("resetResults");
@@ -450,6 +467,7 @@ export default {
       this.unallocStudentDialog = true;
     },
     removeAllGroups() {
+      this.deletionOccured = true;
       const students = this.results.students;
       for (const student of students) {
         student.groupId = 0;
@@ -457,6 +475,7 @@ export default {
       this.unallocated = [...students];
       this.groups = [];
       this.deleteAllDialog = false;
+      this.deletionOccured = false;
       console.log(this.unallocated);
     },
     removeGroup(index) {
@@ -541,9 +560,20 @@ export default {
         e => !this.groups[this.editGroupId - 1].includes(e)
       );
       this.newDialog = false;
+    },
+    getLocationDisplay(student) {
+      let timezone = "";
+      if (student.timezone > 0) {
+        timezone = `(UTC +${student.timezone})`
+      } else if (student.timezone < 0) {
+        timezone = `(UTC ${student.timezone})`
+      } else if (student.timezone == 0) {
+        timezone = "(UTC)";
+      }
+      return student.country + " " + timezone;
     }
   },
-  created() {
+  mounted() {
     this.generateGroups();
   }
 };
@@ -564,5 +594,13 @@ li {
 }
 a {
   color: #42b983;
+}
+.slide-fade-enter-active {
+  transition: all 1s ease;
+}
+.slide-fade-enter
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateY(30px);
+  opacity: 0;
 }
 </style>
