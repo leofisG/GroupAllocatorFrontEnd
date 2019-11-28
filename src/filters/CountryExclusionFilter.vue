@@ -8,7 +8,7 @@
     <v-list-item>
       <v-text-field
         type="number"
-        min="0"
+        min="1"
         label="Max Same Country"
         clearable
         v-model="maxSameCountry"
