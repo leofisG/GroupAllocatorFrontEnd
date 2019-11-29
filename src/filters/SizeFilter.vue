@@ -81,7 +81,7 @@ export default {
   },
   mounted: function() {
     if ("groupSizeLowerBound" in this.filters) {
-      if (this.filters.groupSizeLowerBound == this.filters.groupSizeUpperBound) {
+      if (this.filters.groupSizeLowerBound === this.filters.groupSizeUpperBound) {
         this.fixedGroupSize = this.filters.groupSizeLowerBound
       } else {
         this.currentType = "Variable"
@@ -137,7 +137,7 @@ export default {
     },
     updateFilters() {
       const values =
-        this.currentType == "Fixed"
+        this.currentType === "Fixed"
           ? {
               groupSizeLowerBound: this.fixedGroupSize,
               groupSizeUpperBound: this.fixedGroupSize
@@ -146,6 +146,14 @@ export default {
               groupSizeLowerBound: this.variableGroupRange[0],
               groupSizeUpperBound: this.variableGroupRange[1]
             };
+      if ("quant" in this.filters) {
+        console.log("Quant in filter!")
+        var minQuant = this.filters["quant"].split(",")[0];
+        this.filters.quant = `${minQuant}, ${
+          this.currentType === "Fixed" ?
+          this.fixedGroupSize :
+          this.variableGroupRange[1]}`
+      }
       this.$store.commit("updateFilters", values);
     }
   }

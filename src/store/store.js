@@ -30,6 +30,14 @@ const state = {
     {
       type: "GenderFilter",
       name: "Gender"
+    },
+    {
+      type: "QuantFilter",
+      name: "Min Quant"
+    },
+    {
+      type: "CountryExclusionFilter",
+      name: "Max Same Country"
     }
   ],
   openFilters: [],

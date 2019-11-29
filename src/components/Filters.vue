@@ -6,10 +6,10 @@
       :key="filter.type"
       v-bind:filter="filter"
     >
-      <component
-        v-if="openFilters.includes(filter)"
-        :is="filter.type"
-      />
+    <component
+      v-if="openFilters.includes(filter)"
+      :is="filter.type"
+    />
     </v-list-item>
     <v-menu v-if="availableFilters.length > 0" offset-y close-on-content-click>
       <template v-slot:activator="{ on:menu }">
@@ -36,6 +36,9 @@ import SizeFilter from "../filters/SizeFilter";
 import TimeZoneFilter from "../filters/TimeZoneFilter";
 import AgeFilter from "../filters/AgeFilter";
 import GenderFilter from "../filters/GenderFilter";
+import QuantFilter from "../filters/QuantFilter";
+import CountryExclusionFilter from "../filters/CountryExclusionFilter";
+
 import { mapState, mapGetters, mapMutations } from 'vuex';
 
 export default {
@@ -56,7 +59,9 @@ export default {
     SizeFilter,
     TimeZoneFilter,
     AgeFilter,
-    GenderFilter
+    GenderFilter,
+    QuantFilter,
+    CountryExclusionFilter
   }
 };
 </script>

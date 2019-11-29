@@ -4,6 +4,4 @@ export const firstStudent = state => state.parsedStudents[0];
 
 export const password = state => state.isAuthenticated
 
-export const rightURL = state => {
-    return state.usedURL;
-}
+export const rightURL = state => state.usedURL;
