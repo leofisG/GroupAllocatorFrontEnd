@@ -43,7 +43,7 @@ export default {
   },
   mounted: function() {
     if ("country" in this.filters) {
-      this.maxSameCountry = parseInt(this.filters.country.split(",")[0])
+      this.maxSameCountry = parseInt(this.filters.country.split(",")[1])
     }
     this.updateFilters();
   },

@@ -1,16 +1,17 @@
 <template>
   <div class="display">
+    <!-- Dialogs are at the bottom -->
     <v-app id="mainScreen">
       <v-navigation-drawer v-model="drawer" app clipped :width="325">
         <v-container>
-            <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
-            <back-dialog
-              v-if="backDialog"
-              @close="backDialog = false"
-              @back="goBack"
-              destination="the upload screen"
-              lossWarning="The current file"
-            ></back-dialog>
+          <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
+          <back-dialog
+            v-if="backDialog"
+            @close="backDialog = false"
+            @back="goBack"
+            destination="the upload screen"
+            lossWarning="The current file"
+          ></back-dialog>
         </v-container>
         <Filters></Filters>
       </v-navigation-drawer>
@@ -24,64 +25,7 @@
           justify-end
           @click="checkSubmission"
         >Submit allocation</v-btn>
-        <v-dialog v-model="warningDialog" max-width="40%">
-          <v-card>
-            <v-card-title class="headline justify-center">Error in filters!</v-card-title>
-            <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
-            <v-list>
-              <v-list-item
-                v-for="warning in warnings"
-                :key="warning"
-                :v-bind:warning="warning"
-              >{{warning}}</v-list-item>
-            </v-list>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" text @click="warningDialog = false">back</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="nextDialog" max-width="40%">
-          <v-card>
-            <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
-            <v-alert class="mx-5" type="info">Have you chosen the correct filters?</v-alert>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" text @click="nextDialog = false">back</v-btn>
-              <v-btn color="green darken-1" text @click="prepareRequest">Confirm</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="resultDialog" max-width="40%">
-          <v-card>
-            <v-card-title
-              v-if="!results"
-              class="headline justify-center"
-            >Generating Group Allocation...</v-card-title>
-            <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
-            <v-alert v-if="results" class="mx-5" type="info">{{ allocationMessage }}</v-alert>
-            <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" text @click="cancelResults">Cancel</v-btn>
-              <v-btn v-if="results" color="green darken-1" text @click="showResults">Show results</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-dialog v-model="errorDialog" max-width="40%">
-          <v-card>
-            <v-card-title class="headline justify-center">Server error occured!</v-card-title>
-            <v-card-text>Status: {{ error.status }}</v-card-text>
-            <v-card-text>Message: {{ error.message }}</v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="red" text @click="errorDialog = false">Cancel</v-btn>
-              <v-btn color="green darken-1" text @click="prepareRequest">Try again</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </v-app-bar>
-
       <v-content>
         <v-container class="fill-height" fluid>
           <v-row class="fill-height" align="start" justify="center">
@@ -102,18 +46,87 @@
                   :search="search"
                   class="elevation-1"
                   loading-text="Loading... Please wait"
-                ></v-data-table>
+                >
+                  <template v-slot:item.quant="{ item }">
+                    <td>
+                      <v-layout align-center justify-center>
+                        <v-icon
+                          class="align-center justify-center"
+                          v-if="isQuant(item)"
+                          color="green"
+                        >mdi-check</v-icon>
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-layout>
+                    </td>
+                  </template>
+                </v-data-table>
               </v-card>
               <v-card>
-              <v-btn-toggle class="mx-5" v-model="usedURL" mandatory>
-                <v-btn>Master</v-btn>
-                <v-btn>Sprint</v-btn>
-              </v-btn-toggle>
+                <v-btn-toggle class="mx-5" v-model="usedURL" mandatory>
+                  <v-btn>Master</v-btn>
+                  <v-btn>Sprint</v-btn>
+                </v-btn-toggle>
               </v-card>
             </v-col>
           </v-row>
         </v-container>
       </v-content>
+      <v-dialog v-model="warningDialog" max-width="40%">
+        <v-card>
+          <v-card-title class="headline justify-center">Error in filters!</v-card-title>
+          <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
+          <v-list>
+            <v-list-item
+              v-for="warning in warnings"
+              :key="warning"
+              :v-bind:warning="warning"
+            >{{warning}}</v-list-item>
+          </v-list>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="warningDialog = false">back</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="nextDialog" max-width="40%">
+        <v-card>
+          <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
+          <v-alert class="mx-5" type="info">Have you chosen the correct filters?</v-alert>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="nextDialog = false">back</v-btn>
+            <v-btn color="green darken-1" text @click="prepareRequest">Confirm</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="resultDialog" max-width="40%" persistent>
+        <v-card>
+          <v-card-title
+            v-if="!results"
+            class="headline justify-center"
+          >Generating Group Allocation...</v-card-title>
+          <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
+          <v-alert v-if="results" class="mx-5" type="info">{{ allocationMessage }}</v-alert>
+          <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="cancelResults">Cancel</v-btn>
+            <v-btn v-if="results" color="green darken-1" text @click="showResults">Show results</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="errorDialog" max-width="40%">
+        <v-card>
+          <v-card-title class="headline justify-center">Server error occured!</v-card-title>
+          <v-card-text>Status: {{ error.status }}</v-card-text>
+          <v-card-text>Message: {{ error.message }}</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="red" text @click="errorDialog = false">Cancel</v-btn>
+            <v-btn color="green darken-1" text @click="prepareRequest">Try again</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-app>
   </div>
 </template>
@@ -124,6 +137,7 @@ import { mapState } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
 import { merge, cloneDeep } from "lodash";
+import { isQuant } from '../utility/checkers'
 
 export default {
   name: "display",
@@ -131,13 +145,13 @@ export default {
     usedURL: {
       get() {
         if (this.$store.state.usedURL == this.$store.state.productionURL) {
-          return 0
+          return 0;
         } else {
-          return 1
+          return 1;
         }
       },
       set(index) {
-        this.$store.commit('updateURL', index)
+        this.$store.commit("updateURL", index);
       }
     },
     ...mapState([
@@ -168,6 +182,7 @@ export default {
     "back-dialog": backDialog
   },
   methods: {
+    isQuant,
     prepareRequest() {
       this.errorDialog = false;
       this.error = {};
@@ -193,7 +208,11 @@ export default {
       for (const student of results) {
         map[student.id] = {
           groupId: student.groupId,
-          timezone: student.timezone
+          timezone: student.timezone,
+          timezoneOffset:
+            student.timezone > 0
+              ? "+" + student.timezone.toString()
+              : student.timezone.toString()
         };
       }
       for (const student of students) {

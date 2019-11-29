@@ -147,7 +147,6 @@ export default {
               groupSizeUpperBound: this.variableGroupRange[1]
             };
       if ("quant" in this.filters) {
-        console.log("Quant in filter!")
         var minQuant = this.filters["quant"].split(",")[0];
         this.filters.quant = `${minQuant}, ${
           this.currentType === "Fixed" ?

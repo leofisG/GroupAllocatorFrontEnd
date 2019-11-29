@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="on" max-width="40%">
+  <v-dialog v-model="modelWatcher" max-width="40%">
     <v-card>
       <v-card-title class="headline justify-center">Go back to {{ destination }}?</v-card-title>
       <v-alert class="mx-5" type="warning">{{ lossWarning }} will be lost if you do!</v-alert>
@@ -16,13 +16,19 @@
 export default {
   name: "back-dialog",
   props: {
+    model: Boolean,
     destination: String,
     lossWarning: String
   },
-  data: function() {
-      return {
-          on: true
+  computed: {
+    modelWatcher: {
+      get() {
+        return this.model;
+      },
+      set() {
+        this.$emit('close');
       }
+    }
   }
 };
 </script>

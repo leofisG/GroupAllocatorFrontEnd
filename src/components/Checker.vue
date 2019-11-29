@@ -1,7 +1,6 @@
 <template>
   <span>
-    <v-progress-circular v-if="loading" indeterminate color="primary"></v-progress-circular>
-    <v-tooltip right v-if="!loading" color="transparent">
+    <v-tooltip right color="transparent">
       <template v-slot:activator="{ on }">
         <span v-on="on">
           <v-icon v-if="isValid" color="green">mdi-checkbox-marked-circle</v-icon>
@@ -28,31 +27,15 @@ export default {
   props: {
     group: Array
   },
-  watch: {
-    group() {
-      this.checkValidity();
-    }
-  },
-  data() {
-    return {
-      loading: true,
-      isValid: false,
-      validities: []
-    };
-  },
   computed: {
+    isValid() {
+      return this.validities.every(e => e.status);
+    },
+    validities() {
+      return checkAll(this.group, this.filters);
+    },
     ...mapState(["filters", "openFilters"])
   },
-  methods: {
-    checkValidity() {
-      this.validities = checkAll(this.group, this.filters);
-      this.isValid = this.validities.every(e => e.status);
-      this.loading = false;
-    }
-  },
-  mounted() {
-    this.checkValidity();
-  }
 };
 </script>
 
