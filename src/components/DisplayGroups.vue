@@ -4,44 +4,56 @@
       <v-navigation-drawer v-model="drawer" app clipped :width="400">
         <v-container>
           <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
-          <back-dialog
-            v-if="backDialog"
-            @close="backDialog = false"
-            @back="goBack"
-            destination="the allocation screen"
-            lossWarning="Current groupings"
-          ></back-dialog>
         </v-container>
         <v-container v-if="unallocated.length > 0">
           <p>
             <v-icon color="orange">mdi-exclamation</v-icon>
             {{ unallocated.length }} unallocated students
           </p>
-          <v-data-table
-            style="overflow: auto; max-height: 60vh"
-            show-select
-            :items-per-page="-1"
-            v-model="selectedUnalloc"
-            :headers="unallocHeaders"
-            :items="unallocated"
-            hide-default-footer
-            item-key="id"
-            class="elevation-1 mx-2"
-          ></v-data-table>
-          <v-container class="mx-5">
+          <table class="table is-narrower is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th><input type="checkbox" v-model="toggleState" /></th>
+                <th v-for="header in unallocHeaders" :key="header.text">{{ header.text }}</th>
+              </tr>
+            </thead>
+            <draggable
+              class="list-group"
+              v-model="unallocated"
+              group="people"
+              tag="tbody"
+              @change="log"
+            >
+              <tr v-for="student in unallocated" :key="student.id" :student="student">
+                <td><input v-model="selectedStates[$index]" type="checkbox"></td>
+                <td
+                  v-for="header in unallocHeaders"
+                  :key="header.text"
+                  :header="header"
+                >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
+              </tr>
+            </draggable>
+            <!-- Implement a delete button in this slot -->
+            <!-- Custom country/timezone display -->
+          </table>
+          <v-row>
+            <v-col cols="6">
             <v-btn
               class="mx-5"
               color="orange"
               :disabled="addButtonDisabled"
               @click="editDialog = true"
             >Add to Group</v-btn>
+            </v-col>
+            <v-col cols="6">
             <v-btn
               class="mx-5"
               color="green"
               :disabled="newButtonDisabled"
               @click="newDialog = true"
             >New group</v-btn>
-          </v-container>
+            </v-col>
+          </v-row>
         </v-container>
         <v-alert
           v-if="unallocated.length == 0"
@@ -89,8 +101,8 @@
                 cols="3"
                 sm="12"
                 md="6"
-                lg="4"
-                xl="3"
+                lg="6"
+                xl="4"
                 v-for="group in groups"
                 :key="group.groupId"
                 :group="group"
@@ -107,27 +119,50 @@
                             <span>Delete the whole group</span>
                           </v-tooltip>
                           Group {{ group.groupId }}
-                          <group-checker v-bind:group="group.students"></group-checker>
+                          <group-checker :group="group.students"></group-checker>
                         </v-list-item-title>
-                        <v-data-table
-                          dense
-                          :headers="headers"
-                          :items="group.students"
-                          hide-default-footer
-                          item-key="id"
-                        >
+                        <!-- To implement draggable tables with v-data-table is clunky -->
+                        <table class="table is-narrower is-hoverable is-fullwidth">
+                          <thead>
+                            <tr>
+                              <th v-for="header in headers" :key="header.text">{{ header.text }}</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <draggable
+                            class="list-group"
+                            v-model="group.students"
+                            group="people"
+                            tag="tbody"
+                            @change="log"
+                          >
+                            <tr
+                              v-for="student in group.students"
+                              :key="student.id"
+                              :student="student"
+                            >
+                              <td
+                                v-for="header in headers"
+                                :key="header.text"
+                                :header="header"
+                              >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
+                              <td>
+                                <v-tooltip right>
+                                  <template v-slot:activator="{ on }">
+                                    <v-icon
+                                      v-on="on"
+                                      small
+                                      @click="unallocateStudent(student)"
+                                    >delete</v-icon>
+                                  </template>
+                                  <span>Remove from group</span>
+                                </v-tooltip>
+                              </td>
+                            </tr>
+                          </draggable>
                           <!-- Implement a delete button in this slot -->
-                          <template v-slot:item.action="{ item }">
-                            <v-tooltip right>
-                              <template v-slot:activator="{ on }">
-                                <v-icon v-on="on" small @click="unallocateStudent(item)">delete</v-icon>
-                              </template>
-                              <span>Remove from group</span>
-                            </v-tooltip>
-                          </template>
                           <!-- Custom country/timezone display -->
-                          <template v-slot:item.display="{ item }">{{ getLocationDisplay(item) }}</template>
-                        </v-data-table>
+                        </table>
                       </v-list-item-content>
                     </v-list-item>
                   </v-list>
@@ -138,6 +173,13 @@
         </v-container>
       </v-content>
       <!-- Dialogs -->
+      <back-dialog
+        :model="backDialog"
+        @close="backDialog = false"
+        @back="goBack"
+        destination="the allocation screen"
+        lossWarning="Current groupings"
+      ></back-dialog>
       <v-dialog v-model="editDialog">
         <v-card>
           <v-card-title class="headline justify-center">Select a group to add to</v-card-title>
@@ -302,12 +344,14 @@ import { mapState } from "vuex";
 import backDialog from "../dialogs/backDialog";
 import Checker from "./Checker";
 import { isEqual } from "lodash";
+import draggable from "vuedraggable";
 
 export default {
   name: "groupings",
   components: {
     "back-dialog": backDialog,
-    "group-checker": Checker
+    "group-checker": Checker,
+    draggable
   },
   computed: {
     addButtonDisabled() {
@@ -387,12 +431,8 @@ export default {
         },
         {
           text: "Country",
-          value: "display"
-        },
-        {
-          text: "",
-          value: "action",
-          sortable: false
+          value: null,
+          function: this.getLocationDisplay
         }
       ],
       unallocHeaders: [
@@ -410,12 +450,20 @@ export default {
         },
         {
           text: "Country",
-          value: "display"
+          value: null,
+          function: this.getLocationDisplay
         }
       ]
     };
   },
   methods: {
+    addSelected(event) {
+      console.log(event);
+      console.log(event.target.parentElement);
+    },
+    log(event) {
+      console.log(event);
+    },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     },
@@ -463,6 +511,7 @@ export default {
       this.resetDialog = false;
     },
     unallocateStudent(student) {
+      console.log(student);
       this.selectedStudent = student;
       if (this.groups[student.groupId - 1].students.length == 1) {
         this.lastWarning = true;
