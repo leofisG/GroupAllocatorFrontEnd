@@ -5,7 +5,8 @@ let requiredAttributes = new Map([
     ["Age" , "30"],
     ["Gender", "Male"],
     ["Current City", "London"],
-    ["Country" , "United Kingdom"]
+    ["Country" , "United Kingdom"],
+    ["Quant", "FALSE"]
 ])
 
 let translationMap = new Map([
@@ -20,7 +21,8 @@ let translationMap = new Map([
     ["Subject Area", "career"],
     ["Qualification Description", "degree"],
     ["Work exp. on application", "workYearNum"],
-    ["Current Cohort", "cohort"]
+    ["Current Cohort", "cohort"],
+    ["Quant background", "quant"]
 ])
 
 

@@ -10,6 +10,12 @@ export const checkAll = (group, filters) => {
     if ("isSameGender" in filters || "genderRatio" in filters || "minMale" in filters) {
         validities.push(checkGender(group, filters))
     }
+    if ("quant" in filters) {
+        validities.push(checkQuant(group, filters))
+    }
+    if ("country" in filters) {
+        validities.push(checkCountryExclusion(group, filters))
+    }
     return validities;
 }
 
@@ -87,8 +93,8 @@ export const checkAge = (group, filters) => {
     }
 }
 
-Number.prototype.round = function(places) {
-    return +(Math.round(this + "e+" + places)  + "e-" + places);
+Number.prototype.round = function (places) {
+    return +(Math.round(this + "e+" + places) + "e-" + places);
 }
 
 export const checkGender = (group, filters) => {
@@ -140,6 +146,54 @@ export const checkGender = (group, filters) => {
             message += "one woman per group."
         } else if (filters.minFemale > 1) {
             message += `${filters.minFemale} women per group.`
+        }
+    }
+    return {
+        status, message
+    }
+}
+
+export const checkQuant = (group, filters) => {
+    const quantMin = parseInt(filters.quant.split(",")[0]);
+    let quantCount = 0;
+    for (const student of group) {
+        if (isQuant(student)) {
+            quantCount++;
+        }
+    }
+    const status = quantCount >= quantMin;
+    const message = `A minimum of ${quantMin} with Quant background`;
+    return {
+        status, message
+    }
+}
+
+export const isQuant = student => {
+    if (student.quant !== undefined) {
+        switch (student.quant.toLowerCase().trim()) {
+            case "true":
+            case "yes":
+            case "1":
+                return true;
+            default:
+                return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+export const checkCountryExclusion = (group, filters) => {
+    const countryMax = parseInt(filters.country.split(",")[1])
+    const countryCount = new Map();
+    let status = true;
+    let message = `No more than ${countryMax} students from the same country.`
+    for (const student of group) {
+        countryCount.set(student.country, (countryCount.get(student.country) || 0) + 1)
+    }
+    for (const entry of countryCount) {
+        if (entry[1] > countryMax) {
+            status = false;
         }
     }
     return {

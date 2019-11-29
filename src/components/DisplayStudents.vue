@@ -46,7 +46,20 @@
                   :search="search"
                   class="elevation-1"
                   loading-text="Loading... Please wait"
-                ></v-data-table>
+                >
+                  <template v-slot:item.quant="{ item }">
+                    <td>
+                      <v-layout align-center justify-center>
+                        <v-icon
+                          class="align-center justify-center"
+                          v-if="isQuant(item)"
+                          color="green"
+                        >mdi-check</v-icon>
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-layout>
+                    </td>
+                  </template>
+                </v-data-table>
               </v-card>
               <v-card>
                 <v-btn-toggle class="mx-5" v-model="usedURL" mandatory>
@@ -124,6 +137,7 @@ import { mapState } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
 import { merge, cloneDeep } from "lodash";
+import { isQuant } from '../utility/checkers'
 
 export default {
   name: "display",
@@ -168,6 +182,7 @@ export default {
     "back-dialog": backDialog
   },
   methods: {
+    isQuant,
     prepareRequest() {
       this.errorDialog = false;
       this.error = {};

@@ -6,7 +6,7 @@
       </v-btn>
     </v-card-title>
     <v-card-text>
-      Specify the minimum number of students with quantitaive background here.
+      Specify the minimum number of students with quantitative background here.
     </v-card-text>
     <v-list-item>
       <v-text-field

@@ -1,36 +1,54 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="400">
+      <v-navigation-drawer v-model="drawer" app clipped :width="450">
         <v-container>
-          <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
+          <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
+          <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
         </v-container>
-        <v-container v-if="unallocated.length > 0">
-          <p>
+        <v-container>
+          <v-alert
+            v-if="unallocated.length == 0"
+            class="mx-5"
+            type="success"
+          >All students have been allocated!</v-alert>
+          <p v-if="unallocated.length > 0">
             <v-icon color="orange">mdi-exclamation</v-icon>
             {{ unallocated.length }} unallocated students
           </p>
-          <table class="table is-narrower is-hoverable is-fullwidth">
+          <table class="table is-narrower is-hoverable is-fullwidth is-scrollable">
             <thead>
               <tr>
-                <th><input type="checkbox" v-model="toggleState" /></th>
-                <th v-for="header in unallocHeaders" :key="header.text">{{ header.text }}</th>
+                <th>
+                  <v-checkbox v-model="toggleUnalloc" :disabled="unallocated.length == 0" />
+                </th>
+                <th v-for="header in headers" :key="header.text">{{ header.text }}</th>
+                <th>Quant</th>
               </tr>
             </thead>
             <draggable
+              height="400px"
               class="list-group"
               v-model="unallocated"
               group="people"
               tag="tbody"
-              @change="log"
+              @change="logMove(0, $event)"
             >
               <tr v-for="student in unallocated" :key="student.id" :student="student">
-                <td><input v-model="selectedStates[$index]" type="checkbox"></td>
+                <td>
+                  <v-checkbox v-model="selectedUnalloc" :value="student" />
+                </td>
                 <td
-                  v-for="header in unallocHeaders"
+                  v-for="header in headers"
                   :key="header.text"
                   :header="header"
                 >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
+                <td>
+                  <v-layout align-center justify-center>
+                    <v-icon v-if="isQuant(student)" color="green">mdi-check</v-icon>
+                    <v-icon v-else color="red">mdi-close</v-icon>
+                  </v-layout>
+                </td>
               </tr>
             </draggable>
             <!-- Implement a delete button in this slot -->
@@ -38,28 +56,23 @@
           </table>
           <v-row>
             <v-col cols="6">
-            <v-btn
-              class="mx-5"
-              color="orange"
-              :disabled="addButtonDisabled"
-              @click="editDialog = true"
-            >Add to Group</v-btn>
+              <v-btn
+                class="mx-5"
+                color="orange"
+                :disabled="addButtonDisabled"
+                @click="editDialog = true"
+              >Add to Group</v-btn>
             </v-col>
             <v-col cols="6">
-            <v-btn
-              class="mx-5"
-              color="green"
-              :disabled="newButtonDisabled"
-              @click="newDialog = true"
-            >New group</v-btn>
+              <v-btn
+                class="mx-5"
+                color="green"
+                :disabled="newButtonDisabled"
+                @click="newDialog = true"
+              >New group</v-btn>
             </v-col>
           </v-row>
         </v-container>
-        <v-alert
-          v-if="unallocated.length == 0"
-          class="mx-5"
-          type="success"
-        >All students have been allocated!</v-alert>
       </v-navigation-drawer>
 
       <v-app-bar app clipped-left>
@@ -126,6 +139,8 @@
                           <thead>
                             <tr>
                               <th v-for="header in headers" :key="header.text">{{ header.text }}</th>
+                              <th>Quant</th>
+
                               <th></th>
                             </tr>
                           </thead>
@@ -134,7 +149,7 @@
                             v-model="group.students"
                             group="people"
                             tag="tbody"
-                            @change="log"
+                            @change="logMove(group.groupId, $event)"
                           >
                             <tr
                               v-for="student in group.students"
@@ -146,6 +161,12 @@
                                 :key="header.text"
                                 :header="header"
                               >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
+                              <td>
+                                <v-layout align-center justify-center>
+                                  <v-icon v-if="isQuant(student)" color="green">mdi-check</v-icon>
+                                  <v-icon v-else color="red">mdi-close</v-icon>
+                                </v-layout>
+                              </td>
                               <td>
                                 <v-tooltip right>
                                   <template v-slot:activator="{ on }">
@@ -210,7 +231,15 @@
                   class="elevation-1 mx-5"
                 >
                   <!-- Custom country/timezone display -->
-                  <template v-slot:item.display="{ item }">{{ getLocationDisplay(item) }}</template>
+                  <template v-slot:item.country="{ item }">{{ getLocationDisplay(item) }}</template>
+                  <template v-slot:item.quant="{ item }">
+                    <td>
+                      <v-layout align-center justify-center>
+                        <v-icon v-if="isQuant(item)" color="green">mdi-check</v-icon>
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-layout>
+                    </td>
+                  </template>
                 </v-data-table>
               </v-col>
             </v-row>
@@ -250,7 +279,18 @@
                   hide-default-footer
                   item-key="id"
                   class="elevation-1 mx-5"
-                ></v-data-table>
+                >
+                  <!-- Custom country/timezone display -->
+                  <template v-slot:item.country="{ item }">{{ getLocationDisplay(item) }}</template>
+                  <template v-slot:item.quant="{ item }">
+                    <td>
+                      <v-layout align-center justify-center>
+                        <v-icon v-if="isQuant(item)" color="green">mdi-check</v-icon>
+                        <v-icon v-else color="red">mdi-close</v-icon>
+                      </v-layout>
+                    </td>
+                  </template>
+                </v-data-table>
               </v-col>
             </v-row>
           </v-container>
@@ -324,12 +364,23 @@
       <v-dialog v-model="deleteGroupDialog" max-width="400">
         <v-card>
           <v-card-title justify-center>
-            <v-alert width="100%" class="mx-5" type="info">Remove group {{ selectedGroupId + 1 }}?</v-alert>
+            <v-alert width="100%" class="mx-5" type="info">Remove group {{ selectedGroupId }}?</v-alert>
           </v-card-title>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" text @click="deleteGroupDialog=false">No</v-btn>
             <v-btn color="red" text @click="confirmGroupDelete">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="filterDialog" max-width="40%">
+        <v-card>
+          <v-card-title justify-center>
+            Adjust filters to modify checkers
+          </v-card-title>
+          <Filters></Filters>
+          <v-card-actions justify-center>
+            <v-btn color="green darken-1" large text @click="filterDialog=false">Done</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -345,13 +396,16 @@ import backDialog from "../dialogs/backDialog";
 import Checker from "./Checker";
 import { isEqual } from "lodash";
 import draggable from "vuedraggable";
+import { isQuant } from "../utility/checkers";
+import Filters from "./Filters";
 
 export default {
   name: "groupings",
   components: {
     "back-dialog": backDialog,
     "group-checker": Checker,
-    draggable
+    draggable,
+    Filters
   },
   computed: {
     addButtonDisabled() {
@@ -392,6 +446,18 @@ export default {
         return "no_group";
       }
     },
+    toggleUnalloc: {
+      get() {
+        return this.selectedUnalloc.length > 0;
+      },
+      set() {
+        if (this.selectedUnalloc.length == this.unallocated.length) {
+          this.selectedUnalloc = [];
+        } else {
+          this.selectedUnalloc = this.unallocated.slice();
+        }
+      }
+    },
     ...mapState(["results", "originalResults"])
   },
   data: function() {
@@ -405,6 +471,7 @@ export default {
       lastWarning: false,
       resetDialog: false,
       editDialog: false,
+      filterDialog: false,
       editGroupId: 1,
       newDialog: false,
       deleteAllDialog: false,
@@ -450,19 +517,34 @@ export default {
         },
         {
           text: "Country",
-          value: null,
-          function: this.getLocationDisplay
+          value: "country"
+        },
+        {
+          text: "Quant",
+          value: "quant"
         }
       ]
     };
   },
   methods: {
-    addSelected(event) {
+    isQuant,
+    logMove(groupId, event) {
+      console.log(groupId);
       console.log(event);
-      console.log(event.target.parentElement);
-    },
-    log(event) {
-      console.log(event);
+      if (event.added) {
+        event.added.element.groupId = groupId;
+      } else if (event.removed) {
+        // Either removed from group or from unallocated
+        if (groupId == 0) {
+          this.selectedUnalloc = this.selectedUnalloc.filter(
+            e => e != event.removed.element
+          );
+        } else {
+          if (this.groups[groupId - 1].students.length == 0) {
+            this.shiftGroups(groupId);
+          }
+        }
+      }
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -507,7 +589,7 @@ export default {
     resetGroupings() {
       this.$store.commit("resetResults");
       this.generateGroups();
-      this.selectedUnalloc = this.selectedUnalloc.filter(e => e.groupId == 0);
+      this.selectedUnalloc = [];
       this.resetDialog = false;
     },
     unallocateStudent(student) {
@@ -601,6 +683,7 @@ export default {
     },
     confirmNewGroup() {
       // Set the new group ID for each student
+      console.log(this.editGroupId);
       for (const student of this.selectedUnalloc) {
         student.groupId = this.editGroupId;
       }
