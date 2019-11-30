@@ -6,7 +6,7 @@
         <v-container>
           <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
           <back-dialog
-            v-if="backDialog"
+            :model="backDialog"
             @close="backDialog = false"
             @back="goBack"
             destination="the upload screen"
@@ -24,7 +24,7 @@
           color="green darken-1 white--text"
           justify-end
           @click="checkSubmission"
-        >Submit allocation</v-btn>
+        >Generate groups</v-btn>
       </v-app-bar>
       <v-content>
         <v-container class="fill-height" fluid>
