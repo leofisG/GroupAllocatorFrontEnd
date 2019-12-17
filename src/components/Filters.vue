@@ -15,7 +15,9 @@
       <template v-slot:activator="{ on:menu }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: tooltip }">
-            <v-btn fab dark x-small v-on="{ ...tooltip, ...menu }">
+            <v-btn fab dark x-small
+              v-on="{ ...tooltip, ...menu }"
+              >
               <v-icon dark>mdi-plus</v-icon>
             </v-btn>
           </template>
@@ -49,7 +51,7 @@ export default {
   },
   data: function() {
     return {
-      info: {}
+      info: {},
     };
   },
   methods: {
@@ -62,7 +64,7 @@ export default {
     GenderFilter,
     QuantFilter,
     CountryExclusionFilter
-  }
+  },
 };
 </script>
 
