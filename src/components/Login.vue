@@ -80,7 +80,6 @@ export default {
       const currentPasswordHash = this.hashMD5(this.password);
       if (currentPasswordHash === correctPasswordHash) {
         this.$session.set('isAuthenticatedUser', true);
-        this.$store.commit("authenticateUser");
         this.$router.push({ path: "uploadcsv" });
       } else {
         this.openWrongPasswordPopUp();

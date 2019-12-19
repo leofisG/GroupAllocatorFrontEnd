@@ -45,7 +45,6 @@ const state = {
   results: null,
   originalResults: null,
   warnings: [],
-  isAuthenticated: false,
 };
 
 const store = new Vuex.Store({
