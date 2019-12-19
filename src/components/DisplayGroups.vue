@@ -718,20 +718,24 @@ export default {
   },
   mounted() {
     this.generateGroups();
-    const introJS = require("intro.js");
+    const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
+    if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
 
-    setTimeout(function() {
-      introJS()
-      .addStep({
-        element: ".result-group:nth-of-type(1)",
-        intro: "You can drag the students in and out of the groups."
-      })
-      .addStep({
-        element: ".result-group:nth-of-type(1) i",
-        intro: "Click here if you want to remove the whole group."
-      })
-      .start();
-    }, 1000);
+      setTimeout(function() {
+        require("intro.js")()
+        .addStep({
+          element: ".result-group:nth-of-type(1)",
+          intro: "You can drag the students in and out of the groups."
+        })
+        .addStep({
+          element: ".result-group:nth-of-type(1) i",
+          intro: "Click here if you want to remove the whole group."
+        })
+        .start();
+      }, 2000);
+
+      this.$localStorage.set(hasDisplayGroupsGuideRanField, true);
+    }
   }
 };
 </script>

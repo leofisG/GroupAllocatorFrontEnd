@@ -184,8 +184,11 @@ export default {
     "back-dialog": backDialog
   },
   mounted: function() {
-    const introJS = require("intro.js");
-    setTimeout(function() { introJS().start(); }, 1000);
+    const hasDisplayStudentGuideRanField = "hasDisplayStudentGuideRan";
+    if (!this.$localStorage.get(hasDisplayStudentGuideRanField)) {
+      setTimeout(function() { require("intro.js")().start(); }, 1000);
+      this.$localStorage.set(hasDisplayStudentGuideRanField, true);
+    }
   },
   methods: {
     isQuant,
