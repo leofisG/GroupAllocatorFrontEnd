@@ -2,7 +2,9 @@
   <div class="display">
     <!-- Dialogs are at the bottom -->
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="325">
+      <v-navigation-drawer v-model="drawer" app clipped :width="325"
+        data-intro="All the filters will be shown in here. Click the '+' button for more filters"
+        data-step="1">
         <v-container>
           <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
           <back-dialog
@@ -180,6 +182,13 @@ export default {
   components: {
     Filters,
     "back-dialog": backDialog
+  },
+  mounted: function() {
+    const hasDisplayStudentGuideRanField = "hasDisplayStudentGuideRan";
+    if (!this.$localStorage.get(hasDisplayStudentGuideRanField)) {
+      setTimeout(function() { require("intro.js")().start(); }, 1000);
+      this.$localStorage.set(hasDisplayStudentGuideRanField, true);
+    }
   },
   methods: {
     isQuant,

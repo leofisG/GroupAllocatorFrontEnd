@@ -2,113 +2,21 @@
   <div id="upload">
     <v-app>
       <v-content>
-        <v-row align="center">
-          <v-col cols="3">
-            <h2 class="display-1 mx-3">Student Allocator</h2>
-          </v-col>
-          <v-col cols="1">
-              <p align="center" justify="center">with</p>
-          </v-col>
-          <v-col cols="8">
-            <v-img max-width="9%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
-          </v-col>
-        </v-row>
+        <v-container fluid height="100%">
+          <v-row justify="start">
+            <v-img max-width="10%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
+          </v-row>
           <v-row justify="center">
-            <v-col cols="6" align="left" justify="left">
-              <v-carousel v-model="tutorialCarousel">
-                <v-carousel-item>
-                  <v-sheet color="white lighten-1" height="100%" tile>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <div class="display-1 black--text">Upload a valid student CSV file</div>
-                      <v-img max-width="90%" src="../assets/tutorial/EXCEL_x34u2VxmaP.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white lighten-3" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Select desired filters</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-img max-width="30%" src="../assets/tutorial/chrome_SXtjE1ZVEe.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Adjust filters</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-spacer></v-spacer>
-                      <v-img max-width="30%" src="../assets/tutorial/chrome_alvUfTT6KZ.png"></v-img>
-                      <v-spacer></v-spacer>
-                      <v-img max-width="30%" src="../assets/tutorial/chrome_HR41FhvWbU.png"></v-img>
-                      <v-spacer></v-spacer>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Submit allocation when ready</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-img max-width="30%" src="../assets/tutorial/chrome_M5Ad1FoxF8.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Adjust manually if necessary</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-spacer></v-spacer>
-                      <v-img max-width="20%" src="../assets/tutorial/chrome_9dFNeCSr7P.png"></v-img>
-                      <v-spacer></v-spacer>
-                      <v-img max-width="30%" src="../assets/tutorial/chrome_26VVbYWwSd.png"></v-img>
-                      <v-spacer></v-spacer>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Allocate remaining students</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-img max-width="40%" src="../assets/tutorial/chrome_Lbe0hjuBZC.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Check validation statuses</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-img max-width="40%" src="../assets/tutorial/chrome_wXReyQM7o9.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-                <v-carousel-item>
-                  <v-sheet color="white" height="100%" tile>
-                    <v-row align="start" justify="center">
-                      <div class="display-1 black--text">Download when ready!</div>
-                    </v-row>
-                    <v-row class="fill-height" align="center" justify="center">
-                      <v-img max-width="40%" src="../assets/tutorial/chrome_EutW9oQj3H.png"></v-img>
-                    </v-row>
-                  </v-sheet>
-                </v-carousel-item>
-              </v-carousel>
+            <v-col cols="6">
+              <h2 class="display-1 mx-3">Student Allocator</h2>
             </v-col>
-            <v-col cols="4" justify="center">
+          </v-row>
+          <v-row justify="center" id="upload-row">
+            <v-col cols="6" justify="center">
               <v-card class="elevation-12">
                 <v-toolbar color="primary" dark flat>
                   <v-spacer></v-spacer>
-                  <v-toolbar-title>Start by uploading a CSV file</v-toolbar-title>
+                  <v-toolbar-title>Start by uploading a student data CSV file</v-toolbar-title>
                   <v-spacer></v-spacer>
                 </v-toolbar>
                 <v-card-text>
@@ -135,6 +43,7 @@
               </v-card>
             </v-col>
           </v-row>
+        </v-container>
       </v-content>
     </v-app>
   </div>
@@ -193,4 +102,5 @@ li {
 a {
   color: #42b983;
 }
+
 </style>

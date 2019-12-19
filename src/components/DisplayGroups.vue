@@ -1,12 +1,13 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="450">
+      <v-navigation-drawer v-model="drawer" app clipped :width="450"
+        id="#left-pane">
         <v-container>
           <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
           <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
         </v-container>
-        <v-container>
+        <v-container id="unallocated-students">
           <v-alert
             v-if="unallocated.length == 0"
             class="mx-5"
@@ -109,7 +110,7 @@
             </v-col>
           </v-row>
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
-            <transition-group name="slide-fade" tag="div" class="row layout wrap">
+            <transition-group name="slide-fade" tag="div" class="row layout wrap" >
               <v-col
                 cols="3"
                 sm="12"
@@ -120,19 +121,19 @@
                 :key="group.groupId"
                 :group="group"
               >
-                <v-card height="100%">
+                <v-card class="result-group" height="100%">
                   <v-list flat>
                     <v-list-item>
                       <v-list-item-content>
                         <v-list-item-title class="headline mb-1 pa-2">
                           <v-tooltip left>
                             <template v-slot:activator="{ on }">
-                              <v-icon v-on="on" medium @click="removeGroup(group.groupId)">delete</v-icon>
+                              <v-icon v-on="on" medium @click="removeGroup(group.groupId)" class="delete-group-button">delete</v-icon>
                             </template>
                             <span>Delete the whole group</span>
                           </v-tooltip>
                           Group {{ group.groupId }}
-                          <group-checker :group="group.students"></group-checker>
+                          <group-checker :group="group.students" class="group-checker"></group-checker>
                         </v-list-item-title>
                         <!-- To implement draggable tables with v-data-table is clunky -->
                         <table class="table is-narrower is-hoverable is-fullwidth">
@@ -717,6 +718,24 @@ export default {
   },
   mounted() {
     this.generateGroups();
+    const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
+    if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
+
+      setTimeout(function() {
+        require("intro.js")()
+        .addStep({
+          element: ".result-group:nth-of-type(1)",
+          intro: "You can drag the students in and out of the groups."
+        })
+        .addStep({
+          element: ".result-group:nth-of-type(1) i",
+          intro: "Click here if you want to remove the whole group."
+        })
+        .start();
+      }, 2000);
+
+      this.$localStorage.set(hasDisplayGroupsGuideRanField, true);
+    }
   }
 };
 </script>
