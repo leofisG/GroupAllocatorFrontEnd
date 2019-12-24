@@ -7,13 +7,6 @@
         data-step="1">
         <v-container>
           <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
-          <back-dialog
-            :model="backDialog"
-            @close="backDialog = false"
-            @back="goBack"
-            destination="the upload screen"
-            lossWarning="The current file"
-          ></back-dialog>
         </v-container>
         <Filters></Filters>
       </v-navigation-drawer>
@@ -26,6 +19,8 @@
           color="green darken-1 white--text"
           justify-end
           @click="checkSubmission"
+          data-intro="Click here when you are ready to generate the groups."
+          data-step="2"
         >Generate groups</v-btn>
       </v-app-bar>
       <v-content>
@@ -73,6 +68,13 @@
           </v-row>
         </v-container>
       </v-content>
+      <back-dialog
+            :model="backDialog"
+            @close="backDialog = false"
+            @back="goBack"
+            destination="the upload screen"
+            lossWarning="The current file"
+          ></back-dialog>
       <v-dialog v-model="warningDialog" max-width="40%">
         <v-card>
           <v-card-title class="headline justify-center">Error in filters!</v-card-title>

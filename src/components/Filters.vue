@@ -36,8 +36,8 @@ import SizeFilter from "../filters/SizeFilter";
 import TimeZoneFilter from "../filters/TimeZoneFilter";
 import AgeFilter from "../filters/AgeFilter";
 import GenderFilter from "../filters/GenderFilter";
-import QuantFilter from "../filters/QuantFilter";
-import CountryExclusionFilter from "../filters/CountryExclusionFilter";
+import MinFilter from "../filters/MinFilter";
+import MaxFilter from "../filters/MaxFilter";
 
 import { mapState, mapGetters, mapMutations } from 'vuex';
 
@@ -60,8 +60,8 @@ export default {
     TimeZoneFilter,
     AgeFilter,
     GenderFilter,
-    QuantFilter,
-    CountryExclusionFilter
+    MinFilter,
+    MaxFilter
   }
 };
 </script>

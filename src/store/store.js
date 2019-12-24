@@ -32,12 +32,12 @@ const state = {
       name: "Gender"
     },
     {
-      type: "QuantFilter",
-      name: "Min Quant"
+      type: "MinFilter",
+      name: "Custom minimum filter"
     },
     {
-      type: "CountryExclusionFilter",
-      name: "Max Same Country"
+      type: "MaxFilter",
+      name: "Custom maximum filter"
     }
   ],
   openFilters: [],

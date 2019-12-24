@@ -1,3 +1,20 @@
+export const checkFilterValidity = (filter, headers) => {
+    switch (filter.type) {
+        case "TimeZoneFilter":
+            return headers.some(h => h.value === "country") && headers.some(h => h.value === 'currentCity')
+        case "AgeFilter":
+            return headers.some(h => h.value === "age" && h.type === "number")
+        case "GenderFilter":
+            return headers.some(h => h.type === "gender")
+        case "MinFilter":
+            return headers.some(h => h.type === "booly")
+        case "MaxFilter":
+            return headers.some(h => h.type === "string" || h.type === "number")
+        default:
+            return false;
+    }
+}
+
 export const checkAll = (group, filters) => {
     const validities = [];
     validities.push(checkSize(group, filters));

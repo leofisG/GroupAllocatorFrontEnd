@@ -22,7 +22,7 @@
                 <v-card-text>
                   <v-form>
                     <v-file-input
-                      @change="resetMsg"
+                      @change="processCSV"
                       v-model="file"
                       ref="file"
                       accept=".csv"
@@ -30,15 +30,26 @@
                       show-size
                     ></v-file-input>
                   </v-form>
-                  <v-alert
-                    type="error"
-                    v-bind:style="messageStyle"
-                    v-if="message != &quot;&quot;"
-                  >{{ message }}</v-alert>
+                  <v-alert type="error" v-bind:style="messageStyle" v-if="message != &quot;&quot;">
+                    <h6>{{ message }}</h6>
+                    <v-list>
+                      <v-list-item v-for="error in errors" :key="error">{{ error }}</v-list-item>
+                    </v-list>
+                  </v-alert>
+                  <v-alert type="warning" v-bind:style="messageStyle" v-if="warnings.length > 0">
+                    <h6>The following may cause incorrect or incomplete allocation, continue if you are certain!</h6>
+                    <v-list>
+                      <v-list-item v-for="warning in warnings" :key="warning">{{ warning }}</v-list-item>
+                    </v-list>
+                  </v-alert>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn v-if="this.file" @click="parse" color="primary">Continue</v-btn>
+                  <v-btn
+                    :disabled="!this.file || this.errors.length > 0 || !finishedParsing"
+                    @click="commitUpload"
+                    color="primary"
+                  >Continue</v-btn>
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -58,29 +69,46 @@ export default {
     return {
       tutorialCarousel: 0,
       message: "",
+      errors: [],
+      warnings: [],
       messageStyle: {
         color: "black"
       },
       file: null,
-      validFile: true
+      finishedParsing: false
     };
   },
   methods: {
     processCSV() {
-      this.noFile = false;
-      this.file = this.$refs.file.files[0];
-      this.fileName = `You have uploaded ${this.file.name}`;
-      parse(this.file);
+      this.reset();
+      if (this.file) {
+        parse(this.file, this);
+      }
     },
-    resetMsg() {
+    commitUpload() {
+      this.$router.push({ path: "display-students" });
+    },
+    reset() {
+      this.finishedParsing = false;
       this.message = "";
+      this.errors = [];
+      this.warnings = [];
     },
-    parse() {
-      parse(this.file, this);
-    },
-    displayErrors(amount) {
+    displayErrors(errors) {
       this.file = null;
-      this.message = `There were ${amount} errors parsing the csv file!`;
+      if (errors.length === 1) {
+        this.message = `There was ${errors.length} error parsing the csv file!`;
+      } else {
+        this.message = `There were ${errors.length} errors parsing the csv file!`;
+      }
+      this.errors = errors;
+    },
+    displayWarnings(warnings) {
+      console.log(warnings);
+      this.warnings = warnings;
+    },
+    finishParsing() {
+      this.finishedParsing = true;
     }
   }
 };
@@ -102,5 +130,4 @@ li {
 a {
   color: #42b983;
 }
-
 </style>

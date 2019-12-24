@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import { cloneDeep } from 'lodash';
+import { checkFilterValidity } from '../utility/checkers';
 
 export const setparsedStudents = (state, result) => {
     state.parsedStudents = result;
@@ -28,7 +29,7 @@ export const resetResults = state => {
 
 export const prepareFilters = state => {
     state.openFilters = cloneDeep(state.fixedFilters);
-    state.availableFilters = cloneDeep(state.removableFilters);
+    state.availableFilters = cloneDeep(state.removableFilters).filter(f => checkFilterValidity(f, state.parsedHeaders));
     state.filters = {};
 }
 

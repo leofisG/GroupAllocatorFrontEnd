@@ -1,12 +1,12 @@
 <template>
   <v-card width="100%">
-    <v-card-title class="justify-center">Min Quant
+    <v-card-title class="justify-center">Custom minimum filter
       <v-btn @click="this.remove" absolute right fab dark x-small>
         <v-icon dark>mdi-minus</v-icon>
       </v-btn>
     </v-card-title>
     <v-card-text>
-      Specify the minimum number of students with quantitative background here.
+      Specify the minimum number of students with quantitative background here. // TODO
     </v-card-text>
     <v-list-item>
       <v-text-field
