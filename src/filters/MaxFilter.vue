@@ -86,6 +86,15 @@ export default {
     };
   },
   mounted() {
+    const filter = this.filter;
+    if (filter.values) {
+      if (filter.values.field !== undefined) {
+        this.selectedField = filter.values.field;
+      }
+      if (!isNaN(filter.values.maximum)) {
+        this.selectedMaximum = filter.values.maximum;
+      }
+    }
     this.updateFilters();
   },
   methods: {
@@ -106,7 +115,9 @@ export default {
       }
       const values = {
         field: this.selectedField,
-        convertedName: this.parsedHeaders.find(h => h.text === this.selectedField).value,
+        convertedName: this.parsedHeaders.find(
+          h => h.text === this.selectedField
+        ).value,
         maximum: this.selectedMaximum
       };
       this.$store.commit("updateFilter", { id: this.id, values });

@@ -111,6 +111,18 @@ export default {
     };
   },
   mounted() {
+    const filter = this.filter;
+    if (filter.values) {
+      if (filter.values.field !== undefined) {
+        this.selectedField = filter.values.field;
+      }
+      if (filter.values.value !== undefined) {
+        this.selectedValue = filter.values.value;
+      }
+      if (!isNaN(filter.values.minimum)) {
+        this.selectedMinimum = filter.values.minimum;
+      }
+    }
     this.updateFilters();
   },
   methods: {
@@ -135,7 +147,9 @@ export default {
       }
       const values = {
         field: this.selectedField,
-        convertedName: this.parsedHeaders.find(h => h.text === this.selectedField).value,
+        convertedName: this.parsedHeaders.find(
+          h => h.text === this.selectedField
+        ).value,
         value: this.selectedValue,
         minimum: this.selectedMinimum
       };
