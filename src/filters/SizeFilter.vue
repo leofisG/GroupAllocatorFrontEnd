@@ -50,45 +50,54 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "sizefilter",
+  props: {
+    id: Number
+  },
   computed: {
-    ...mapState(["filters"]),
-    ...mapGetters(["studentCount"])
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    },
+    ...mapGetters(["studentCount", "baseFilters"])
   },
   watch: {
-    currentType: function() {
+    currentType() {
       this.updateFilters();
     },
-    fixedGroupSize: function() {
+    fixedGroupSize() {
       this.updateFilters();
     },
-    variableGroupRange: function() {
+    variableGroupRange() {
       this.updateFilters();
     }
   },
-  data: function() {
+  data() {
     return {
       currentType: "Fixed",
-      groupSizeTypes: ['Fixed', 'Variable'],
+      groupSizeTypes: ["Fixed", "Variable"],
       fixedGroupSize: 2,
       variableGroupRange: [2, 6],
       groupSizeLowerLimit: 2,
       groupSizeUpperLimit: 6
     };
   },
-  mounted: function() {
-    if ("groupSizeLowerBound" in this.filters) {
-      if (this.filters.groupSizeLowerBound === this.filters.groupSizeUpperBound) {
-        this.fixedGroupSize = this.filters.groupSizeLowerBound
+  mounted() {
+    const filter = this.filter;
+    if ("groupSizeLowerBound" in filter.values) {
+      if (
+        filter.values.groupSizeLowerBound ===
+        filter.values.groupSizeUpperBound
+      ) {
+        this.fixedGroupSize = filter.values.groupSizeLowerBound;
       } else {
-        this.currentType = "Variable"
-        this.groupSizeLowerLimit = this.filters.groupSizeLowerBound
-        this.groupSizeUpperLimit = this.filters.groupSizeUpperBound
+        this.currentType = "Variable";
+        this.groupSizeLowerLimit = filter.values.groupSizeLowerBound;
+        this.groupSizeUpperLimit = filter.values.groupSizeUpperBound;
         this.$set(this.variableGroupRange, 0, this.groupSizeLowerLimit);
-        this.$set(this.variableGroupRange, 1, this.groupSizeUpperLimit)
+        this.$set(this.variableGroupRange, 1, this.groupSizeUpperLimit);
       }
     }
     this.updateFilters();
@@ -139,21 +148,14 @@ export default {
       const values =
         this.currentType === "Fixed"
           ? {
-              groupSizeLowerBound: this.fixedGroupSize,
-              groupSizeUpperBound: this.fixedGroupSize
+              groupSizeLowerBound: Number(this.fixedGroupSize),
+              groupSizeUpperBound: Number(this.fixedGroupSize)
             }
           : {
               groupSizeLowerBound: this.variableGroupRange[0],
               groupSizeUpperBound: this.variableGroupRange[1]
             };
-      if ("quant" in this.filters) {
-        var minQuant = this.filters["quant"].split(",")[0];
-        this.filters.quant = `${minQuant}, ${
-          this.currentType === "Fixed" ?
-          this.fixedGroupSize :
-          this.variableGroupRange[1]}`
-      }
-      this.$store.commit("updateFilters", values);
+      this.$store.commit("updateFilter", { id: this.id, values });
     }
   }
 };

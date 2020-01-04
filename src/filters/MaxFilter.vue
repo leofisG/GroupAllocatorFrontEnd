@@ -1,23 +1,33 @@
 <template>
   <v-card width="100%">
-    <v-card-title class="justify-center">Country Exclusion
+    <v-card-title class="justify-center">
+      Maximum filter
       <v-btn @click="this.remove" absolute right fab dark x-small>
         <v-icon dark>mdi-minus</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text>
-      Specify the maximum number of students that can be from the same country 
-      here.
-    </v-card-text>
+    <v-card-text>Specify a field and the maximum desired number of identical values per group.</v-card-text>
     <v-list-item>
+      <v-autocomplete
+        v-model="selectedField"
+        :items="availableMaxFields"
+        label="Field"
+        placeholder="Select a field"
+      ></v-autocomplete>
+    </v-list-item>
+    <v-list-item v-if="selectedField !== &quot;&quot;">
       <v-text-field
         type="number"
         min="1"
-        label="Max Same Country"
+        label="Maximum"
+        placeholder="Desired maximum amount"
         clearable
-        v-model="maxSameCountry"
-        @change="validateMaxSameCountry"
+        v-model="selectedMaximum"
+        @change="validateMax"
       ></v-text-field>
+    </v-list-item>
+    <v-list-item v-if="minError">
+      <v-alert dense type="error" style="font-size:0.8em">{{ minErrorMessage }}</v-alert>
     </v-list-item>
   </v-card>
 </template>
@@ -26,46 +36,80 @@
 import { mapGetters, mapState } from "vuex";
 
 export default {
-  name: "countryfilter",
+  name: "maxfilter",
+  props: {
+    id: Number
+  },
   computed: {
-    ...mapState(["filters"]),
+    minError() {
+      return this.openFilters.some(
+        f =>
+          f.type === "MinFilter" &&
+          f.values &&
+          f.values.field === this.selectedField &&
+          f.values.minimum > this.selectedMaximum
+      );
+    },
+    availableMaxFields() {
+      return this.$store.getters.availableMaxFields(this.selectedField);
+    },
+    ...mapState(["openFilters", "parsedHeaders"]),
     ...mapGetters(["studentCount"])
   },
   watch: {
-    maxSameCountry: function() {
+    minError() {
+      if (this.minError) {
+        this.$store.commit("setWarning", {
+          id: this.id,
+          value: true
+        });
+      } else {
+        this.$store.commit("setWarning", {
+          id: this.id,
+          value: false
+        });
+      }
+    },
+    selectedField() {
       this.updateFilters();
     },
+    selectedMaximum() {
+      this.updateFilters();
+    }
   },
-  data: function() {
+  data() {
     return {
-      maxSameCountry: 1,
+      selectedField: "",
+      selectedMaximum: 1,
+      minErrorMessage:
+        "You have a corresponding minimum filter with a value above this maximum!"
     };
   },
-  mounted: function() {
-    if ("country" in this.filters) {
-      this.maxSameCountry = parseInt(this.filters.country.split(",")[1])
-    }
+  mounted() {
     this.updateFilters();
   },
   methods: {
-    validateMaxSameCountry() {
-      if (this.maxSameCountry <= 1) {
-        this.maxSameCountry = 1;
+    validateMax() {
+      if (this.selectedMaximum <= 1) {
+        this.selectedMaximum = 1;
       }
-      if (this.maxSameCountry >= this.studentCount) {
-        this.maxSameCountry = this.studentCount - 1;
+      if (this.selectedMaximum >= this.studentCount) {
+        this.selectedMaximum = this.studentCount - 1;
       }
     },
     remove() {
-      this.$store.commit("removeFromFilter", ["country"])
-      this.$store.commit("removeFilter", "CountryExclusionFilter");
+      this.$store.commit("removeFilter", this.id);
     },
     updateFilters() {
-      const values =
-            {
-              country: `0, ${this.maxSameCountry}`,
-            };
-      this.$store.commit("updateFilters", values);
+      if (this.selectedField === "" || isNaN(this.selectedMaximum)) {
+        return;
+      }
+      const values = {
+        field: this.selectedField,
+        convertedName: this.parsedHeaders.find(h => h.text === this.selectedField).value,
+        maximum: this.selectedMaximum
+      };
+      this.$store.commit("updateFilter", { id: this.id, values });
     }
   }
 };

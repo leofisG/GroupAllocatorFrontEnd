@@ -2,9 +2,14 @@
   <div class="display">
     <!-- Dialogs are at the bottom -->
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="325"
+      <v-navigation-drawer
+        v-model="drawer"
+        app
+        clipped
+        :width="325"
         data-intro="All the filters will be shown in here. Click the '+' button for more filters"
-        data-step="1">
+        data-step="1"
+      >
         <v-container>
           <v-btn color="error" dark large @click="backDialog = true">Go back</v-btn>
         </v-container>
@@ -19,8 +24,6 @@
           color="green darken-1 white--text"
           justify-end
           @click="checkSubmission"
-          data-intro="Click here when you are ready to generate the groups."
-          data-step="2"
         >Generate groups</v-btn>
       </v-app-bar>
       <v-content>
@@ -44,17 +47,20 @@
                   class="elevation-1"
                   loading-text="Loading... Please wait"
                 >
-                  <template v-slot:item.quant="{ item }">
-                    <td>
-                      <v-layout align-center justify-center>
+                  <template v-slot:item="{ item }">
+                    <tr>
+                    <td v-for="header in parsedHeaders" :key="header.text" :header="header">
+                      <v-layout v-if="header.type === &quot;booly&quot;" align-center justify-center>
                         <v-icon
                           class="align-center justify-center"
-                          v-if="isQuant(item)"
+                          v-if="propertyIsTruthy(item, header.value)"
                           color="green"
                         >mdi-check</v-icon>
                         <v-icon v-else color="red">mdi-close</v-icon>
                       </v-layout>
+                      <span v-else>{{ item[header.value] }}</span>
                     </td>
+                    </tr>
                   </template>
                 </v-data-table>
               </v-card>
@@ -69,19 +75,19 @@
         </v-container>
       </v-content>
       <back-dialog
-            :model="backDialog"
-            @close="backDialog = false"
-            @back="goBack"
-            destination="the upload screen"
-            lossWarning="The current file"
-          ></back-dialog>
+        :model="backDialog"
+        @close="backDialog = false"
+        @back="goBack"
+        destination="the upload screen"
+        lossWarning="The current file"
+      ></back-dialog>
       <v-dialog v-model="warningDialog" max-width="40%">
         <v-card>
           <v-card-title class="headline justify-center">Error in filters!</v-card-title>
           <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
           <v-list>
             <v-list-item
-              v-for="warning in warnings"
+              v-for="warning in filterWarnings"
               :key="warning"
               :v-bind:warning="warning"
             >{{warning}}</v-list-item>
@@ -137,11 +143,11 @@
 
 <script>
 import Filters from "./Filters";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import sendRequest from "../utility/request";
 import backDialog from "../dialogs/backDialog";
 import { merge, cloneDeep } from "lodash";
-import { isQuant } from '../utility/checkers'
+import { propertyIsTruthy } from "../utility/checkers";
 
 export default {
   name: "display",
@@ -158,15 +164,10 @@ export default {
         this.$store.commit("updateURL", index);
       }
     },
-    ...mapState([
-      "parsedStudents",
-      "parsedHeaders",
-      "filters",
-      "results",
-      "warnings"
-    ])
+    ...mapGetters(["filterWarnings"]),
+    ...mapState(["parsedStudents", "parsedHeaders", "results"])
   },
-  data: function() {
+  data() {
     return {
       search: "",
       drawer: null,
@@ -185,15 +186,17 @@ export default {
     Filters,
     "back-dialog": backDialog
   },
-  mounted: function() {
+  mounted() {
     const hasDisplayStudentGuideRanField = "hasDisplayStudentGuideRan";
     if (!this.$localStorage.get(hasDisplayStudentGuideRanField)) {
-      setTimeout(function() { require("intro.js")().start(); }, 1000);
+      setTimeout(function() {
+        require("intro.js")().start();
+      }, 1000);
       this.$localStorage.set(hasDisplayStudentGuideRanField, true);
     }
   },
   methods: {
-    isQuant,
+    propertyIsTruthy,
     prepareRequest() {
       this.errorDialog = false;
       this.error = {};
@@ -242,7 +245,7 @@ export default {
       return message;
     },
     checkSubmission() {
-      if (this.warnings.length > 0) {
+      if (this.filterWarnings.length > 0) {
         this.warningDialog = true;
       } else {
         this.nextDialog = true;

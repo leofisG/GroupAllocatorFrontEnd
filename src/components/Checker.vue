@@ -32,9 +32,9 @@ export default {
       return this.validities.every(e => e.status);
     },
     validities() {
-      return checkAll(this.group, this.filters);
+      return checkAll(this.group, this.openFilters);
     },
-    ...mapState(["filters", "openFilters"])
+    ...mapState(["openFilters"])
   },
 };
 </script>

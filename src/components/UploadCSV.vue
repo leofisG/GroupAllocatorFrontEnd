@@ -37,7 +37,7 @@
                     </v-list>
                   </v-alert>
                   <v-alert type="warning" v-bind:style="messageStyle" v-if="warnings.length > 0">
-                    <h6>The following may cause incorrect or incomplete allocation, continue if you are certain!</h6>
+                    <h6>The following errors may cause incorrect or incomplete allocation, continue if you are certain!</h6>
                     <v-list>
                       <v-list-item v-for="warning in warnings" :key="warning">{{ warning }}</v-list-item>
                     </v-list>
@@ -67,7 +67,6 @@ export default {
   name: "upload",
   data() {
     return {
-      tutorialCarousel: 0,
       message: "",
       errors: [],
       warnings: [],
@@ -104,7 +103,6 @@ export default {
       this.errors = errors;
     },
     displayWarnings(warnings) {
-      console.log(warnings);
       this.warnings = warnings;
     },
     finishParsing() {

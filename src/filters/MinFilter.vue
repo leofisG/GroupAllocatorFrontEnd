@@ -1,22 +1,41 @@
 <template>
   <v-card width="100%">
-    <v-card-title class="justify-center">Custom minimum filter
+    <v-card-title class="justify-center">
+      Minimum filter
       <v-btn @click="this.remove" absolute right fab dark x-small>
         <v-icon dark>mdi-minus</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text>
-      Specify the minimum number of students with quantitative background here. // TODO
-    </v-card-text>
+    <v-card-text>Select a field, value and the minimum number desired per group.</v-card-text>
     <v-list-item>
+      <v-autocomplete
+        v-model="selectedField"
+        :items="availableMinFields"
+        label="Field"
+        placeholder="Select a field"
+      ></v-autocomplete>
+    </v-list-item>
+    <v-list-item v-if="selectedField !== &quot;&quot;">
+      <v-autocomplete
+        v-model="selectedValue"
+        :items="availableValues"
+        label="Value"
+        placeholder="Select a value"
+      ></v-autocomplete>
+    </v-list-item>
+    <v-list-item v-if="selectedValue !== &quot;&quot;">
       <v-text-field
         type="number"
         min="0"
-        label="Min Quant"
+        label="Minimum"
+        placeholder="Desired minimum amount"
         clearable
-        v-model="minQuant"
-        @change="validateMinQuant"
+        v-model="selectedMinimum"
+        @change="validateMin"
       ></v-text-field>
+    </v-list-item>
+    <v-list-item v-if="maxError">
+      <v-alert dense type="error" style="font-size:0.8em">{{ maxErrorMessage }}</v-alert>
     </v-list-item>
   </v-card>
 </template>
@@ -25,50 +44,105 @@
 import { mapGetters, mapState } from "vuex";
 
 export default {
-  name: "quantfilter",
+  name: "minfilter",
+  props: {
+    id: Number
+  },
   computed: {
-    ...mapState(["filters"]),
+    maxError() {
+      return this.openFilters.some(
+        f =>
+          f.type === "MaxFilter" &&
+          f.values &&
+          f.values.field === this.selectedField &&
+          f.values.maximum < this.selectedMinimum
+      );
+    },
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    },
+    filters() {
+      return this.$store.getters.baseFilters;
+    },
+    fieldValue() {
+      return this.parsedHeaders.find(h => h.text === this.selectedField).value;
+    },
+    availableValues() {
+      return this.parsedHeaders.find(h => h.text === this.selectedField)
+        .uniqueValues;
+    },
+    availableMinFields() {
+      return this.$store.getters.availableMinFields(this.selectedField);
+    },
+    ...mapState(["parsedHeaders", "openFilters"]),
     ...mapGetters(["studentCount"])
   },
   watch: {
-    minQuant: function() {
+    maxError() {
+      if (this.maxError) {
+        this.$store.commit("setWarning", {
+          id: this.id,
+          value: true
+        });
+      } else {
+        this.$store.commit("setWarning", {
+          id: this.id,
+          value: false
+        });
+      }
+    },
+    selectedField() {
+      this.selectedValue = "";
+    },
+    selectedValue() {
       this.updateFilters();
     },
+    selectedMinimum() {
+      this.updateFilters();
+    }
   },
-  data: function() {
+  data() {
     return {
-      minQuant: 1,
+      selectedField: "",
+      selectedValue: "",
+      selectedMinimum: 1,
+      maxErrorMessage:
+        "You have a corresponding maximum filter with a value below this minimum!"
     };
   },
-  mounted: function() {
-    if ("quant" in this.filters) {
-      this.minQuant = parseInt(this.filters.quant.split(",")[0])
-    }
+  mounted() {
     this.updateFilters();
   },
   methods: {
-    validateMinQuant() {
-      if (this.minQuant < 0) {
-        this.minQuant = 0;
+    validateMin() {
+      if (this.selectedMinimum < 0) {
+        this.selectedMinimum = 0;
       }
-      if (this.minQuant >= this.studentCount) {
-        this.minQuant = this.studentCount - 1;
+      if (this.selectedMinimum >= this.studentCount) {
+        this.selectedMinimum = this.studentCount - 1;
       }
     },
     remove() {
-      this.$store.commit("removeFromFilter", ["quant"])
-      this.$store.commit("removeFilter", "QuantFilter");
+      this.$store.commit("removeFilter", this.id);
     },
     updateFilters() {
-      const values =
-            {
-              quant: `${this.minQuant}, ${this.filters.groupSizeUpperBound}`,
-            };
-      this.$store.commit("updateFilters", values);
+      if (
+        this.selectedField === "" ||
+        this.selectedValue === "" ||
+        isNaN(this.selectedMinimum)
+      ) {
+        return;
+      }
+      const values = {
+        field: this.selectedField,
+        convertedName: this.parsedHeaders.find(h => h.text === this.selectedField).value,
+        value: this.selectedValue,
+        minimum: this.selectedMinimum
+      };
+      this.$store.commit("updateFilter", { id: this.id, values });
     }
   }
 };
 </script>
-
 <style>
 </style>

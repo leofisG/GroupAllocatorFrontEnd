@@ -12,7 +12,6 @@
     <v-list-item v-if="currentType == &quot;Different&quot;">
       <v-text-field
         type="number"
-        min="0"
         label="Timezone difference"
         clearable
         v-model="timezoneDiff"
@@ -25,22 +24,38 @@
 <script>
 export default {
   name: "timezonefilter",
-  data: function() {
+  props: {
+    id: Number
+  },
+  computed: {
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    }
+  },
+  data() {
     return {
       currentType: "Same",
-      timeZoneTypes: ['Same', 'Different'],
+      timeZoneTypes: ["Same", "Different"],
       timezoneDiff: 1
     };
   },
   watch: {
-    currentType: function() {
-      this.updateFilters()
+    currentType() {
+      this.updateFilters();
     },
-    timezoneDiff: function() {
-      this.updateFilters()
+    timezoneDiff() {
+      this.updateFilters();
     }
   },
-  mounted: function() {
+  mounted() {
+    if ("timezoneDiff" in this.filter.values) {
+      if (this.filter.values.timezoneDiff === 0) {
+        this.currentType = "Same";
+      } else {
+        this.currentType = "Different";
+        this.timezoneDiff = this.filter.values.timezoneDiff;
+      }
+    }
     this.updateFilters();
   },
   methods: {
@@ -53,8 +68,7 @@ export default {
       }
     },
     remove() {
-      this.$store.commit("removeFromFilter", ["timezoneDiff"])
-      this.$store.commit("removeFilter", "TimeZoneFilter");
+      this.$store.commit("removeFilter", this.id);
     },
     updateFilters() {
       const values =
@@ -63,9 +77,9 @@ export default {
               timezoneDiff: 0
             }
           : {
-              timezoneDiff: this.timezoneDiff
+              timezoneDiff: Number(this.timezoneDiff)
             };
-      this.$store.commit("updateFilters", values);
+      this.$store.commit("updateFilter", { id: this.id, values });
     }
   }
 };

@@ -1,11 +1,7 @@
 import store from '../store/store'
 
 const sendRequest = display => {
-    const filters = store.state.filters;
-    const requestData = {
-        filters: filters,
-        students: store.state.parsedStudents
-    };
+    const requestData = store.getters.requestData;
     // eslint-disable-next-line
     console.log("Sending to URL " + store.getters.rightURL)
     console.log(requestData)
@@ -43,7 +39,7 @@ const sendRequest = display => {
         }
     };
     // eslint-disable-next-line
-    console.log(filters);
+    console.log(requestData.filters);
     xml.send(JSON.stringify(requestData));
 }
 

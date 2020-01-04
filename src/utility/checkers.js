@@ -1,51 +1,64 @@
-export const checkFilterValidity = (filter, headers) => {
+import { minFieldsInUse, maxFieldsInUse } from '../store/getters'
+
+export const checkFilterValidity = (filter, state) => {
+    const headers = state.parsedHeaders;
+    const openFilters = state.openFilters;
     switch (filter.type) {
         case "TimeZoneFilter":
-            return headers.some(h => h.value === "country") && headers.some(h => h.value === 'currentCity')
+            return !openFilters.some(f => f.type === filter.type) &&
+                headers.some(h => h.value === "country") &&
+                headers.some(h => h.value === 'currentCity')
         case "AgeFilter":
-            return headers.some(h => h.value === "age" && h.type === "number")
+            return !openFilters.some(f => f.type === filter.type) &&
+                headers.some(h => h.value === "age" &&
+                    h.type === "number")
         case "GenderFilter":
-            return headers.some(h => h.type === "gender")
-        case "MinFilter":
-            return headers.some(h => h.type === "booly")
-        case "MaxFilter":
-            return headers.some(h => h.type === "string" || h.type === "number")
+            return !openFilters.some(f => f.type === filter.type) && headers.some(h => h.type === "gender")
+        case "MinFilter": {
+            const minFields = minFieldsInUse(state);
+            return headers.filter(h => !minFields.includes(h.value)).some(h => h.type === "string" || h.type === "number" || h.type === "booly")
+        }
+        case "MaxFilter": {
+            const maxFields = maxFieldsInUse(state);
+            return headers.filter(h => !maxFields.includes(h.value)).some(h => h.type === "string" || h.type === "number" || h.type === "booly")
+        }
         default:
             return false;
     }
 }
 
-export const checkAll = (group, filters) => {
+export const checkAll = (group, openFilters) => {
     const validities = [];
-    validities.push(checkSize(group, filters));
-    if ("timezoneDiff" in filters) {
-        validities.push(checkTimeZone(group, filters))
+    validities.push(checkSize(group, openFilters.find(f => f.type === "SizeFilter")));
+    if (openFilters.some(f => f.type === "TimeZoneFilter")) {
+        validities.push(checkTimeZone(group, openFilters.find(f => f.type === "TimeZoneFilter")))
     }
-    if ("ageDiff" in filters) {
-        validities.push(checkAge(group, filters));
+    if (openFilters.some(f => f.type === "AgeFilter")) {
+        validities.push(checkAge(group, openFilters.find(f => f.type === "AgeFilter")));
     }
-    if ("isSameGender" in filters || "genderRatio" in filters || "minMale" in filters) {
-        validities.push(checkGender(group, filters))
+    if (openFilters.some(f => f.type === "GenderFilter")) {
+        validities.push(checkGender(group, openFilters.find(f => f.type === "GenderFilter")))
     }
-    if ("quant" in filters) {
-        validities.push(checkQuant(group, filters))
+    for (const filter of openFilters.filter(f => f.type === "MinFilter" && f.values && f.values.field && f.values.value && f.values.minimum)) {
+        validities.push(checkMinFilter(group, filter));
     }
-    if ("country" in filters) {
-        validities.push(checkCountryExclusion(group, filters))
+    for (const filter of openFilters.filter(f => f.type === "MaxFilter" && f.values && f.values.field && f.values.maximum)) {
+        validities.push(checkMaxFilter(group, filter));
     }
     return validities;
 }
 
-export const checkSize = (group, filters) => {
+export const checkSize = (group, filter) => {
     let status = true;
-    let message = `Group size is ${filters.groupSizeUpperBound}`
-    if (filters.groupSizeLowerBound != filters.groupSizeUpperBound) {
-        message = `Group size is between ${filters.groupSizeLowerBound} and ${filters.groupSizeUpperBound}`
+    const values = filter.values;
+    let message = `Group size is ${values.groupSizeUpperBound}`
+    if (values.groupSizeLowerBound != values.groupSizeUpperBound) {
+        message = `Group size is between ${values.groupSizeLowerBound} and ${values.groupSizeUpperBound}`
     }
-    if (group.length < filters.groupSizeLowerBound) {
+    if (group.length < values.groupSizeLowerBound) {
         status = false
     }
-    if (group.length > filters.groupSizeUpperBound) {
+    if (group.length > values.groupSizeUpperBound) {
         status = false
     }
     return {
@@ -54,8 +67,8 @@ export const checkSize = (group, filters) => {
     }
 }
 
-export const checkTimeZone = (group, filters) => {
-    const maxDifference = filters.timezoneDiff;
+export const checkTimeZone = (group, filter) => {
+    const maxDifference = filter.values.timezoneDiff;
     let status = true;
     let message = "Same timezones"
     if (maxDifference > 0) {
@@ -84,9 +97,10 @@ const getDiff = (zone1, zone2) => {
     return Math.min(diff, 24 - diff);
 }
 
-export const checkAge = (group, filters) => {
+export const checkAge = (group, filter) => {
+    const ageDiff = filter.values.ageDiff;
     let status = true
-    let message = `Ages differ by ${filters.ageDiff} years`
+    let message = `Ages differ by ${ageDiff} years`
     let minAge = Infinity;
     let maxAge = 0;
     for (const student of group) {
@@ -97,13 +111,13 @@ export const checkAge = (group, filters) => {
             maxAge = student.age
         }
     }
-    if (filters.ageDiff == 0) {
+    if (ageDiff == 0) {
         message = `Same ages`;
         if (maxAge - minAge != 0) {
             status = false;
         }
     } else {
-        status = (maxAge - minAge) <= filters.ageDiff;
+        status = (maxAge - minAge) <= ageDiff;
     }
     return {
         status, message
@@ -114,10 +128,11 @@ Number.prototype.round = function (places) {
     return +(Math.round(this + "e+" + places) + "e-" + places);
 }
 
-export const checkGender = (group, filters) => {
+export const checkGender = (group, filter) => {
+    const values = filter.values;
     let status = true;
     let message = "Group consists of same genders";
-    if ("isSameGender" in filters) {
+    if ("isSameGender" in values) {
         const gender = group[0].gender;
         for (const student of group) {
             if (student.gender != gender) {
@@ -125,7 +140,7 @@ export const checkGender = (group, filters) => {
                 break;
             }
         }
-    } else if ("genderRatio" in filters) {
+    } else if ("genderRatio" in values) {
         let maleCount = 0;
         for (const student of group) {
             if (student.gender == "Male") {
@@ -133,8 +148,8 @@ export const checkGender = (group, filters) => {
             }
         }
         const ratio = maleCount / group.length
-        const lowerBound = (filters.genderRatio - filters.genderErrorMargin).round(2);
-        const upperBound = (filters.genderRatio + filters.genderErrorMargin).round(2);
+        const lowerBound = (values.genderRatio - values.genderErrorMargin).round(2);
+        const upperBound = (values.genderRatio + values.genderErrorMargin).round(2);
         if (lowerBound == upperBound) {
             message = `Male:Female ratio is ${lowerBound}`
         } else {
@@ -152,17 +167,17 @@ export const checkGender = (group, filters) => {
                 femaleCount++;
             }
         }
-        status = maleCount >= filters.minMale && femaleCount >= filters.minFemale;
+        status = maleCount >= values.minMale && femaleCount >= values.minFemale;
         message = "At least ";
-        if (filters.minMale == 1) {
+        if (values.minMale == 1) {
             message += "one man and "
-        } else if (filters.minMale > 1) {
-            message += `${filters.minMale} men and `
+        } else if (values.minMale > 1) {
+            message += `${values.minMale} men and `
         }
-        if (filters.minFemale == 1) {
+        if (values.minFemale == 1) {
             message += "one woman per group."
-        } else if (filters.minFemale > 1) {
-            message += `${filters.minFemale} women per group.`
+        } else if (values.minFemale > 1) {
+            message += `${values.minFemale} women per group.`
         }
     }
     return {
@@ -170,50 +185,63 @@ export const checkGender = (group, filters) => {
     }
 }
 
-export const checkQuant = (group, filters) => {
-    const quantMin = parseInt(filters.quant.split(",")[0]);
-    let quantCount = 0;
+export const checkMinFilter = (group, filter) => {
+    const values = filter.values;
+    let count = 0;
     for (const student of group) {
-        if (isQuant(student)) {
-            quantCount++;
+        if (student[values.convertedName] === values.value) {
+            count++;
         }
     }
-    const status = quantCount >= quantMin;
-    const message = `A minimum of ${quantMin} with Quant background`;
+    const status = count >= values.minimum;
+    const message = `A minimum of ${values.minimum} with "${values.field}" value: "${values.value}"`;
     return {
         status, message
     }
 }
 
-export const isQuant = student => {
-    if (student.quant !== undefined) {
-        switch (student.quant.toLowerCase().trim()) {
-            case "true":
-            case "yes":
-            case "1":
-                return true;
-            default:
-                return false;
-        }
-    } else {
-        return false;
-    }
+export const isTruthy = value => {
+    const truthy = /^(yes|true|1)$/i
+    return truthy.test(value);
 }
 
-export const checkCountryExclusion = (group, filters) => {
-    const countryMax = parseInt(filters.country.split(",")[1])
-    const countryCount = new Map();
+export const propertyIsTruthy = (student, property) => {
+    return student[property] !== undefined && isTruthy(student[property]);
+}
+
+export const checkMaxFilter = (group, filter) => {
+    const values = filter.values;
+    const count = new Map();
     let status = true;
-    let message = `No more than ${countryMax} students from the same country.`
+    let message = `No more than ${values.maximum} students with the same "${values.field}" value.`
     for (const student of group) {
-        countryCount.set(student.country, (countryCount.get(student.country) || 0) + 1)
+        count.set(student[values.convertedName], (count.get(student[values.convertedName]) || 0) + 1)
     }
-    for (const entry of countryCount) {
-        if (entry[1] > countryMax) {
+    for (const entry of count) {
+        if (entry[1] > values.maximum) {
             status = false;
         }
     }
     return {
         status, message
     }
+}
+
+export const getLocationDisplay = student => {
+    let timezone = "";
+    if (student.timezone > 0) {
+        timezone = `(UTC +${student.timezone})`;
+    } else if (student.timezone < 0) {
+        timezone = `(UTC ${student.timezone})`;
+    } else if (student.timezone == 0) {
+        timezone = "(UTC)";
+    }
+    return student.country + " " + timezone;
+}
+
+export const isMinMaxHeader = (header, filters) => {
+    return filters.some(f =>
+        (f.type === "MinFilter" || f.type === "MaxFilter") &&
+        f.values && f.values.field && f.values.field === header.text
+    );
 }

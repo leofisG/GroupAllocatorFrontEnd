@@ -1,6 +1,7 @@
 import Papa from 'papaparse'
 import store from '../../store/store'
 
+const restrictedKeyWords = ["groupSizeLowerBound", "groupSizeUpperBound", "ageDiff", "timeZoneDiff", "isSameGender", "genderRatio", "genderErrorMargin", "minMale", "minFemale"]
 let coreAttributes = [
     {
         regex: /^first\s*name$/i,
@@ -10,7 +11,7 @@ let coreAttributes = [
     },
     {
         regex: /^last\s*name$/i,
-        canonicalName: "Lase name",
+        canonicalName: "Last name",
         mappedName: "lastName",
         type: "string"
     },
@@ -22,7 +23,7 @@ let coreAttributes = [
     },
     {
         regex: /^(c?id)$/i,
-        canonicalName: "CID",
+        canonicalName: "ID",
         mappedName: "id",
         type: "unique id"
     },
@@ -53,10 +54,13 @@ export function parse(file, event) {
         complete: function (results) {
             if (results.errors.length > 0) {
                 event.displayErrors(results.errors)
-            } else if (results.data.length <= 1) {
-                event.displayErrors(["There are 1 or less students!"])
             } else {
-                furtherParse(results.data, event)
+                const errors = collectCriticalErrors(results);
+                if (errors.length > 0) {
+                    event.displayErrors(errors)
+                } else {
+                    furtherParse(results.data, event)
+                }
             }
         }
     })
@@ -67,18 +71,57 @@ export function generate(results) {
     return new Blob([csv], { type: "text/csv;charset=utf-8" })
 }
 
+function collectCriticalErrors(results) {
+    const errors = [];
+    if (results.data.length <= 1) {
+        errors.push("There are 1 or less students!");
+    }
+    if (emptyHeaderExists(results.meta.fields)) {
+        errors.push("Column headers cannot be empty!");
+    }
+    if (duplicateHeaderExists(results.meta.fields)) {
+        errors.push(`Cannot have duplicate header columns! (${duplicateHeaderColumns(results.meta.fields)})`)
+    }
+    return errors;
+}
+
+function emptyHeaderExists(headers) {
+    return headers.some(h => h === "");
+}
+
+function duplicateHeaderExists(headers) {
+    return new Set(headers).size !== headers.length;
+}
+
+function duplicateHeaderColumns(headers) {
+    return headers.filter((h, index) => headers.indexOf(h) !== index);
+}
+
 function emptyFieldExists(data) {
     for (const person of data) {
         for (const attribute in person) {
             if (person[attribute] === "") {
-                console.log(attribute)
-                console.log(person)
                 return true;
             }
         }
     }
-
     return false;
+}
+
+function findEmptyFields(data, warnings) {
+    for (const [index, person] of data.entries()) {
+        const emptyFields = [];
+        for (const attribute in person) {
+            if (person[attribute] === "") {
+                emptyFields.push(attribute);
+            }
+        }
+        if (emptyFields.length === 1) {
+            warnings.push(`Field "${emptyFields[0]}" is empty for index ${index}`);
+        } else if (emptyFields.length > 1) {
+            warnings.push(`Fields ${emptyFields} are empty for index ${index}`);
+        }
+    }
 }
 
 function furtherParse(data, event) {
@@ -86,8 +129,9 @@ function furtherParse(data, event) {
     let headers = []
     let warnings = []
     if (emptyFieldExists(data)) {
-        warnings.push("One or more fields are empty!")
+        findEmptyFields(data, warnings);
     }
+    console.log(warnings);
     let attributes = Object.keys(data[0])
     for (const attribute of attributes) {
         if (!matchesCoreAttribute(attribute, data, parsedStudents, headers)) {
@@ -114,10 +158,12 @@ function furtherParse(data, event) {
 function matchesCoreAttribute(attribute, data, parsedStudents, headers) {
     for (const coreAttribute of coreAttributes) {
         if (coreAttribute.regex.test(attribute) && matchesRequiredType(attribute, data, coreAttribute.type)) {
+            const uniqueValues = new Set();
             for (let i = 0; i < data.length; i++) {
-                parsedStudents[i][coreAttribute.mappedName] = data[i][attribute]
+                uniqueValues.add(data[i][attribute]);
+                parsedStudents[i][coreAttribute.mappedName] = data[i][attribute];
             }
-            headers.push({ text: attribute, value: coreAttribute.mappedName, type: coreAttribute.type })
+            headers.push({ text: attribute, value: coreAttribute.mappedName, type: coreAttribute.type, uniqueValues: Array.from(uniqueValues) })
             return true;
         }
     }
@@ -126,12 +172,26 @@ function matchesCoreAttribute(attribute, data, parsedStudents, headers) {
 
 function handleUnknownAttribute(attribute, data, parsedStudents, headers) {
     const type = inferUnknownType(attribute, data);
-    console.log(`Type for ${attribute} is ${type}`);
-    const sanitizedName = attribute.toLowerCase().replace(/\s/g, "_")
+    const sanitizedName = getSanitizedName(attribute, headers);
+    const uniqueValues = new Set();
     for (let i = 0; i < data.length; i++) {
-        parsedStudents[i][sanitizedName] = data[i][attribute]
+        uniqueValues.add(data[i][attribute]);
+        parsedStudents[i][sanitizedName] = data[i][attribute];
     }
-    headers.push({ text: attribute, value: sanitizedName, type })
+    headers.push({ text: attribute, value: sanitizedName, type, uniqueValues: Array.from(uniqueValues) })
+}
+
+function getSanitizedName(attribute, headers) {
+    let name = attribute.toLowerCase().replace(/\s/g, "_");
+    if (!headers.some(h => h.value === name) && !restrictedKeyWords.includes(name)) {
+        return name
+    }
+    let id = 0;
+    do {
+        name = name + id;
+        id ++;
+    } while (headers.some(h => h.value === name) || restrictedKeyWords.includes(name))
+    return name;
 }
 
 function inferUnknownType(attribute, data) {

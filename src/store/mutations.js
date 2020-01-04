@@ -1,6 +1,6 @@
-import Vue from 'vue'
 import { cloneDeep } from 'lodash';
 import { checkFilterValidity } from '../utility/checkers';
+import { baseFilters } from './getters'
 
 export const setparsedStudents = (state, result) => {
     state.parsedStudents = result;
@@ -29,47 +29,40 @@ export const resetResults = state => {
 
 export const prepareFilters = state => {
     state.openFilters = cloneDeep(state.fixedFilters);
-    state.availableFilters = cloneDeep(state.removableFilters).filter(f => checkFilterValidity(f, state.parsedHeaders));
-    state.filters = {};
+    recalculateAvailableFilters(state);
+    state.filterId = 1;
 }
 
-export const removeFromFilter = (state, values) => {
-    for (const value of values) {
-        if (value in state.filters) {
-            Vue.delete(state.filters, value)
-        }
-    }
-}
-
-export const updateFilters = (state, values) => {
-    state.filters = { ...state.filters, ...values }
+export const recalculateAvailableFilters = state => {
+    state.availableFilters = cloneDeep(state.removableFilters).filter(f => checkFilterValidity(f, state));
 }
 
 export const addFilter = (state, filter) => {
-    state.availableFilters = state.availableFilters.filter(e => e != filter);
-    state.openFilters.push(filter);
+    const newFilter = cloneDeep(filter);
+    newFilter.id = state.filterId;
+    state.filterId += 1;
+    state.openFilters.push(newFilter);
+    recalculateAvailableFilters(state);
 }
 
-export const removeFilter = (state, name) => {
-    const filter = state.openFilters.find(e => e.type == name);
-    state.openFilters = state.openFilters.filter(e => e.type != name);
-    state.availableFilters.push(filter);
+export const removeFilter = (state, id) => {
+    state.openFilters = state.openFilters.filter(e => e.id !== id);
+    recalculateAvailableFilters(state);
 }
 
-export const addWarning = (state, warning) => {
-    console.log("Adding " + warning);
-    if (!state.warnings.includes(warning)) {
-        state.warnings.push(warning);
+export const updateFilter = (state, payload) => {
+    const index = state.openFilters.findIndex(f => f.id === payload.id);
+    if (index !== -1) {
+        state.openFilters[index].values = payload.values;
     }
+    console.log(baseFilters(state));
 }
 
-export const removeWarning = (state, warning) => {
-    console.log("Removing " + warning);
-    state.warnings = state.warnings.filter(e => e != warning)
-}
-
-export const clearWarnings = state => {
-    state.warnings = [];
+export const setWarning = (state, payload) => {
+    const index = state.openFilters.findIndex(f => f.id === payload.id);
+    if (index !== -1) {
+        state.openFilters[index].error = payload.value;
+    }
 }
 
 export const updateURL = (state, index) => {

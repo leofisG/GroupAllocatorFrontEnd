@@ -3,12 +3,12 @@
     <v-list-item
       class="pa-2"
       v-for="filter in openFilters"
-      :key="filter.type"
+      :key="filter.id"
       v-bind:filter="filter"
     >
     <component
-      v-if="openFilters.includes(filter)"
       :is="filter.type"
+      :id="filter.id"
     />
     </v-list-item>
     <v-menu v-if="availableFilters.length > 0" offset-y close-on-content-click>
@@ -24,7 +24,12 @@
       </template>
       <v-list>
         <v-list-item v-for="(filter, index) in availableFilters" @click="addFilter(filter)" :key="index" v-bind:filter="filter">
-          <v-list-item-title>{{ filter.name }}</v-list-item-title>
+          <v-tooltip right>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-list-item-title v-on="{ ...tooltip }">{{ filter.name }}</v-list-item-title>
+            </template>
+            {{ filter.tooltip }}
+          </v-tooltip>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -44,10 +49,10 @@ import { mapState, mapGetters, mapMutations } from 'vuex';
 export default {
   name: "filters",
   computed: {
-    ...mapState(["filters", "openFilters", "availableFilters"]),
+    ...mapState(["openFilters", "availableFilters", "multiFilters"]),
     ...mapGetters(["studentCount"])
   },
-  data: function() {
+  data() {
     return {
       info: {}
     };
