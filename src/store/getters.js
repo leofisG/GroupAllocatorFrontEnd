@@ -106,7 +106,7 @@ export const requestData = state => {
 }
 
 const validFilterHeaders = new Map([
-    ["id", () => true],
+    // ["id", () => true],
     ["firstName", () => true],
     ["lastName", () => true],
     ["gender", filters => filters.some(f => f.type === "GenderFilter")],

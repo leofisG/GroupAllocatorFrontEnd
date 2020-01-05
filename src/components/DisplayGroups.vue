@@ -500,21 +500,24 @@ export default {
     return {
       search: "",
       drawer: null,
+
       csvDialog: false,
       backDialog: false,
       unallocStudentDialog: false,
       deleteGroupDialog: false,
-      lastWarning: false,
       resetDialog: false,
       editDialog: false,
       filterDialog: false,
-      editGroupId: 1,
       newDialog: false,
       deleteAllDialog: false,
+
+      lastWarning: false,
+      editGroupId: 1,
       deletionOccured: false,
       finishedAllocation: false,
       selectedStudent: null,
       selectedGroupId: null,
+
       groups: [],
       unallocated: [],
       selectedUnalloc: [],

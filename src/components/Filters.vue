@@ -11,7 +11,7 @@
       :id="filter.id"
     />
     </v-list-item>
-    <v-menu v-if="availableFilters.length > 0" offset-y close-on-content-click>
+    <v-menu v-if="availableFilters.length > 0" offset-x close-on-content-click open-on-hover>
       <template v-slot:activator="{ on:menu }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: tooltip }">

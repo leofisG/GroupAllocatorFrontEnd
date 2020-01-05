@@ -51,9 +51,9 @@ export const checkAll = (group, openFilters) => {
 export const checkSize = (group, filter) => {
     let status = true;
     const values = filter.values;
-    let message = `Group size is ${values.groupSizeUpperBound}`
+    let message = `Group size is ${values.groupSizeUpperBound}. (Current size: ${group.length})`
     if (values.groupSizeLowerBound != values.groupSizeUpperBound) {
-        message = `Group size is between ${values.groupSizeLowerBound} and ${values.groupSizeUpperBound}`
+        message = `Group size is between ${values.groupSizeLowerBound} and ${values.groupSizeUpperBound}. (Current size: ${group.length})`
     }
     if (group.length < values.groupSizeLowerBound) {
         status = false
@@ -70,22 +70,28 @@ export const checkSize = (group, filter) => {
 export const checkTimeZone = (group, filter) => {
     const maxDifference = filter.values.timezoneDiff;
     let status = true;
-    let message = "Same timezones"
+    let message = "Same timezones."
     if (maxDifference > 0) {
-        message = `Timezones differ by ${maxDifference} hours`;
+        message = `Timezones differ at most by ${maxDifference} hours.`;
     }
     const currentDiffs = new Set();
+    let currentMax = 0;
     for (const student of group) {
         console.log(student.timezone)
         const timezone = student.timezone || 0
         for (const existing of currentDiffs) {
-            if (getDiff(timezone, existing) > maxDifference) {
+            const difference = getDiff(timezone, existing);
+            if (difference > currentMax) {
+                currentMax = difference;
+            }
+            if (difference > maxDifference) {
                 status = false;
                 break;
             }
         }
         currentDiffs.add(timezone);
     }
+    message = message.concat(` (Max difference: ${currentMax})`)
     return {
         status,
         message
@@ -100,7 +106,7 @@ const getDiff = (zone1, zone2) => {
 export const checkAge = (group, filter) => {
     const ageDiff = filter.values.ageDiff;
     let status = true
-    let message = `Ages differ by ${ageDiff} years`
+    let message = `Ages differ at most by ${ageDiff} years`
     let minAge = Infinity;
     let maxAge = 0;
     for (const student of group) {
@@ -119,6 +125,7 @@ export const checkAge = (group, filter) => {
     } else {
         status = (maxAge - minAge) <= ageDiff;
     }
+    message = message.concat(` (Max difference: ${maxAge - minAge})`)
     return {
         status, message
     }
@@ -151,9 +158,9 @@ export const checkGender = (group, filter) => {
         const lowerBound = (values.genderRatio - values.genderErrorMargin).round(2);
         const upperBound = (values.genderRatio + values.genderErrorMargin).round(2);
         if (lowerBound == upperBound) {
-            message = `Male:Female ratio is ${lowerBound}`
+            message = `Male:Female ratio is ${lowerBound}. (Current ratio: ${ratio.round(2)})`
         } else {
-            message = `Male:Female ratio is between ${lowerBound} and ${upperBound}`
+            message = `Male:Female ratio is between ${lowerBound} and ${upperBound}. (Ratio: ${ratio.round(2)})`
         }
         status = ratio >= lowerBound && ratio <= upperBound;
     } else {
@@ -179,6 +186,7 @@ export const checkGender = (group, filter) => {
         } else if (values.minFemale > 1) {
             message += `${values.minFemale} women per group.`
         }
+        message += ` (Male: ${maleCount}, Female: ${femaleCount})`
     }
     return {
         status, message
@@ -194,7 +202,7 @@ export const checkMinFilter = (group, filter) => {
         }
     }
     const status = count >= values.minimum;
-    const message = `A minimum of ${values.minimum} with "${values.field}" value: "${values.value}"`;
+    const message = `A minimum of ${values.minimum} with "${values.field}" value: "${values.value}" (Current count: ${count})`;
     return {
         status, message
     }
@@ -213,15 +221,20 @@ export const checkMaxFilter = (group, filter) => {
     const values = filter.values;
     const count = new Map();
     let status = true;
+    let maxCount = 0;
     let message = `No more than ${values.maximum} students with the same "${values.field}" value.`
     for (const student of group) {
         count.set(student[values.convertedName], (count.get(student[values.convertedName]) || 0) + 1)
     }
     for (const entry of count) {
+        if (entry[1] > maxCount) {
+            maxCount = entry[1];
+        }
         if (entry[1] > values.maximum) {
             status = false;
         }
     }
+    message += ` (Max count: ${maxCount})`
     return {
         status, message
     }
