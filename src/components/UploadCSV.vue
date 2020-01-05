@@ -30,17 +30,28 @@
                       show-size
                     ></v-file-input>
                   </v-form>
-                  <v-alert type="error" v-bind:style="messageStyle" v-if="message != &quot;&quot;">
-                    <h6>{{ message }}</h6>
-                    <v-list>
-                      <v-list-item v-for="error in errors" :key="error">{{ error }}</v-list-item>
-                    </v-list>
+                  <v-alert type="error" v-if="message != &quot;&quot;">
+                    <h6>The following errors prevent parsing!</h6>
+                    <v-divider />
+                    <v-expansion-panels>
+                      <v-expansion-panel>
+                        <v-expansion-panel-header>{{ errors.length }} Error(s)</v-expansion-panel-header>
+                        <v-expansion-panel-content v-for="error in errors" :key="error">{{ error }}</v-expansion-panel-content>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
                   </v-alert>
                   <v-alert type="warning" v-bind:style="messageStyle" v-if="warnings.length > 0">
-                    <h6>The following errors may cause incorrect or incomplete allocation, continue if you are certain!</h6>
-                    <v-list>
-                      <v-list-item v-for="warning in warnings" :key="warning">{{ warning }}</v-list-item>
-                    </v-list>
+                    <h6>The following issues may cause incorrect or incomplete allocation, continue if you are certain!</h6>
+                    <v-divider />
+                    <v-expansion-panels>
+                      <v-expansion-panel>
+                        <v-expansion-panel-header>{{ warnings.length }} Warning(s)</v-expansion-panel-header>
+                        <v-expansion-panel-content
+                          v-for="warning in warnings"
+                          :key="warning"
+                        >{{ warning }}</v-expansion-panel-content>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
                   </v-alert>
                 </v-card-text>
                 <v-card-actions>
@@ -94,7 +105,6 @@ export default {
       this.warnings = [];
     },
     displayErrors(errors) {
-      this.file = null;
       if (errors.length === 1) {
         this.message = `There was ${errors.length} error parsing the csv file!`;
       } else {

@@ -66,8 +66,8 @@ export function parse(file, event) {
     })
 }
 
-export function generate(results) {
-    const csv = Papa.unparse(results.students.sort((a, b) => a.groupId < b.groupId ? -1 : a.groupId > b.groupId ? 1 : 0))
+export function generateFile() {
+    const csv = Papa.unparse(store.getters.studentsForDownload)
     return new Blob([csv], { type: "text/csv;charset=utf-8" })
 }
 

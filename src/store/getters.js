@@ -47,13 +47,13 @@ export const requestData = state => {
     const openFilters = state.openFilters;
     let minValues = openFilters.filter(
         f => f.type === "MinFilter" &&
-        f.values && f.values.field
-        && f.values.value
+            f.values && f.values.field
+            && f.values.value
     ).map(f => f.values)
     let maxValues = openFilters.filter(
         f => f.type === "MaxFilter" &&
-        f.values &&
-        f.values.field
+            f.values &&
+            f.values.field
     ).map(f => f.values)
     // For those min/max filters where type is booly and "true" was selected
     // We can combine min/Max ranges
@@ -128,4 +128,23 @@ export const filterHeaders = state => {
     }
     console.log(headers);
     return headers;
+}
+
+// Convert fields back to original headers
+export const studentsForDownload = state => {
+    const headers = state.parsedHeaders;
+    const students = state.results.students;
+    const convertedStudents = []
+    for (const student of students) {
+        const newStudent = {};
+        newStudent["Group ID"] = student.groupId;
+        for (const field in student) {
+            const header = headers.find(h => h.value === field);
+            if (header !== undefined) {
+                newStudent[header.text] = student[field];
+            }
+        }
+        convertedStudents.push(newStudent);
+    }
+    return convertedStudents.sort((a, b) => a["Group ID"] - b["Group ID"])
 }

@@ -424,7 +424,7 @@
 </template>
 
 <script>
-import { generate } from "../utility/parser/myparser";
+import { generateFile } from "../utility/parser/myparser";
 import saveAs from "file-saver";
 import { mapState, mapGetters } from "vuex";
 import backDialog from "../dialogs/backDialog";
@@ -547,7 +547,7 @@ export default {
       this.$router.push({ path: "display-students" });
     },
     generateCSV() {
-      const blob = generate(this.results);
+      const blob = generateFile();
       saveAs(blob, "results.csv");
       this.csvDialog = false;
     },
