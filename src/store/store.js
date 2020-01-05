@@ -11,37 +11,66 @@ const state = {
   usedURL: "https://organiser-app.herokuapp.com/allocateGroups",
   parsedStudents: null,
   parsedHeaders: null,
-  filters: {},
+  filterId: 1,
   fixedFilters: [
     {
       type: "SizeFilter",
-      name: "Size"
+      name: "Size",
+      tooltip: "Adjust the size of the groups with a fixed or flexible size.",
+      id: 0,
+      values: {},
+      error: false,
     }
   ],
   removableFilters: [
     {
       type: "TimeZoneFilter",
-      name: "Timezone"
+      name: "Timezone",
+      tooltip: "Group people from the same timezone or a range of timezones.",
+      id: null,
+      values: {},
+      error: false
     },
     {
       type: "AgeFilter",
-      name: "Age"
+      name: "Age",
+      tooltip: "Group people with the same age or a range of ages.",
+      id: null,
+      values: {},
+      error: false
     },
     {
       type: "GenderFilter",
-      name: "Gender"
+      name: "Gender",
+      tooltip: "Adjust the gender allocation of groups, using limits or percentages.",
+      id: null,
+      values: {},
+      error: false
     },
     {
-      type: "QuantFilter",
-      name: "Min Quant"
+      type: "MinFilter",
+      name: "Minimum filter",
+      tooltip: "Choose a value and the minimum number of people per group who should have this value.",
+      field: null,
+      value: null,
+      id: null,
+      values: {},
+      error: false
     },
     {
-      type: "CountryExclusionFilter",
-      name: "Max Same Country"
+      type: "MaxFilter",
+      name: "Maximum filter",
+      tooltip: "Choose a field, and the maximum number of people per group who have an identical field value.",
+      field: null,
+      id: null,
+      values: {},
+      error: false
     }
   ],
   openFilters: [],
   availableFilters: [],
+  multiFilters: [ "MinFilter", "MaxFilter" ],
+  maxFieldsInUse: [],
   results: null,
   originalResults: null,
   warnings: [],

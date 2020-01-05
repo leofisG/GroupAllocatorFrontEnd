@@ -3,12 +3,12 @@
     <v-list-item
       class="pa-2"
       v-for="filter in openFilters"
-      :key="filter.type"
+      :key="filter.id"
       v-bind:filter="filter"
     >
     <component
-      v-if="openFilters.includes(filter)"
       :is="filter.type"
+      :id="filter.id"
     />
     </v-list-item>
     <v-menu v-if="availableFilters.length > 0" offset-y close-on-content-click>
@@ -24,7 +24,12 @@
       </template>
       <v-list>
         <v-list-item v-for="(filter, index) in availableFilters" @click="addFilter(filter)" :key="index" v-bind:filter="filter">
-          <v-list-item-title>{{ filter.name }}</v-list-item-title>
+          <v-tooltip right>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-list-item-title v-on="{ ...tooltip }">{{ filter.name }}</v-list-item-title>
+            </template>
+            {{ filter.tooltip }}
+          </v-tooltip>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -36,18 +41,18 @@ import SizeFilter from "../filters/SizeFilter";
 import TimeZoneFilter from "../filters/TimeZoneFilter";
 import AgeFilter from "../filters/AgeFilter";
 import GenderFilter from "../filters/GenderFilter";
-import QuantFilter from "../filters/QuantFilter";
-import CountryExclusionFilter from "../filters/CountryExclusionFilter";
+import MinFilter from "../filters/MinFilter";
+import MaxFilter from "../filters/MaxFilter";
 
 import { mapState, mapGetters, mapMutations } from 'vuex';
 
 export default {
   name: "filters",
   computed: {
-    ...mapState(["filters", "openFilters", "availableFilters"]),
+    ...mapState(["openFilters", "availableFilters", "multiFilters"]),
     ...mapGetters(["studentCount"])
   },
-  data: function() {
+  data() {
     return {
       info: {}
     };
@@ -60,8 +65,8 @@ export default {
     TimeZoneFilter,
     AgeFilter,
     GenderFilter,
-    QuantFilter,
-    CountryExclusionFilter
+    MinFilter,
+    MaxFilter
   }
 };
 </script>

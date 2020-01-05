@@ -56,11 +56,12 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-
 export default {
   name: "genderfilter",
-  data: function() {
+  props: {
+    id: Number
+  },
+  data() {
     return {
       currentType: "Same genders",
       genderTypes: ["Same genders", "Ratio-based", "Minimum of each"],
@@ -85,61 +86,68 @@ export default {
     };
   },
   watch: {
-    currentType: function() {
+    currentType() {
       this.updateWarning();
       this.updateFilters();
     },
-    genderRatio: function() {
+    genderRatio() {
       this.updateFilters();
     },
-    genderErrorMargin: function() {
+    genderErrorMargin() {
       this.checkMargin();
       this.updateFilters();
     },
-    minMale: function() {
+    minMale() {
       this.checkMin();
       this.updateFilters();
     },
-    minFemale: function() {
+    minFemale() {
       this.checkMin();
       this.updateFilters();
     },
-    filters: function() {
+    filters() {
       this.checkMargin();
       this.checkMin();
     }
   },
   computed: {
-    ...mapState(["filters"]),
-    minRatio: function() {
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    },
+    filters() {
+      return this.$store.getters.baseFilters;
+    },
+    minRatio() {
+      const filters = this.filters;
       return Math.ceil(
         (100 *
-          (1 -
-            this.filters.groupSizeLowerBound /
-              this.filters.groupSizeUpperBound)) /
+          (1 - filters.groupSizeLowerBound / filters.groupSizeUpperBound)) /
           2
       );
     },
-    maxRatio: function() {
+    maxRatio() {
       return Math.min(this.genderRatio, 100 - this.genderRatio);
     },
-    checkMinVal: function() {
+    checkMinVal() {
       return (
         parseInt(this.minMale) + parseInt(this.minFemale) >
         this.filters.groupSizeUpperBound
       );
     }
   },
-  mounted: function() {
-    if ("genderRatio" in this.filters) {
+  mounted() {
+    const filter = this.filter;
+    if ("genderRatio" in filter.values) {
       this.currentType = "Ratio-based";
       // Convert back from decimal to percentage value
-      this.genderRatio = Math.round(this.filters.genderRatio * 100);
-      this.genderErrorMargin = Math.round(this.filters.genderErrorMargin * 100);
-    } else if ("minMale" in this.filters) {
+      this.genderRatio = Math.round(filter.values.genderRatio * 100);
+      this.genderErrorMargin = Math.round(
+        filter.values.genderErrorMargin * 100
+      );
+    } else if ("minMale" in filter.values) {
       this.currentType = "Minimum of each";
-      this.minMale = this.filters.minMale;
-      this.minFemale = this.filters.minFemale;
+      this.minMale = filter.values.minMale;
+      this.minFemale = filter.values.minFemale;
     } else {
       this.genderErrorMargin = this.minRatio;
       this.updateFilters();
@@ -147,9 +155,7 @@ export default {
   },
   methods: {
     remove() {
-      this.$store.commit("removeFromFilter", this.values);
-      this.$store.commit("removeWarning", "Gender");
-      this.$store.commit("removeFilter", "GenderFilter");
+      this.$store.commit("removeFilter", this.id);
     },
     checkMargin() {
       if (this.currentType == "Ratio-based") {
@@ -157,15 +163,24 @@ export default {
           this.marginErrors = [
             `Your minimum margin should be ${this.minRatio}`
           ];
-          this.$store.commit("addWarning", "Gender");
+          this.$store.commit("setWarning", {
+            id: this.id,
+            value: true
+          });
         } else if (!this.isMaxRatio()) {
           this.marginErrors = [
             `Margin cannot be bigger than ${this.maxRatio}!`
           ];
-          this.$store.commit("addWarning", "Gender");
+          this.$store.commit("setWarning", {
+            id: this.id,
+            value: true
+          });
         } else {
           this.marginErrors = [];
-          this.$store.commit("removeWarning", "Gender");
+          this.$store.commit("setWarning", {
+            id: this.id,
+            value: false
+          });
         }
       }
       return true;
@@ -177,17 +192,21 @@ export default {
       return this.genderErrorMargin <= this.maxRatio;
     },
     checkMin() {
-      console.log("in checkmin");
       if (this.currentType == "Minimum of each") {
         if (this.checkMinVal) {
-          this.$store.commit("addWarning", "Gender");
+          this.$store.commit("setWarning", {
+            id: this.id,
+            value: true
+          });
         } else {
-          this.$store.commit("removeWarning", "Gender");
+          this.$store.commit("setWarning", {
+            id: this.id,
+            value: false
+          });
         }
       }
     },
     updateFilters() {
-      this.$store.commit("removeFromFilter", this.values);
       const values = {};
       switch (this.currentType) {
         case "Same genders":
@@ -198,15 +217,17 @@ export default {
           values.genderErrorMargin = this.genderErrorMargin / 100;
           break;
         default:
-          values.minMale = this.minMale;
-          values.minFemale = this.minFemale;
+          values.minMale = Number(this.minMale);
+          values.minFemale = Number(this.minFemale);
       }
-      this.$store.commit("updateFilters", values);
+      this.$store.commit("updateFilter", { id: this.id, values });
     },
     updateWarning() {
-      console.log("In updateWarning");
       if (this.currentType == "Same genders") {
-        this.$store.commit("removeWarning", "Gender");
+        this.$store.commit("setWarning", {
+          id: this.id,
+          value: false
+        });
       } else if (this.currentType == "Ratio-based") {
         this.checkMargin();
       } else {

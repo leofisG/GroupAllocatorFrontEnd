@@ -1,8 +1,7 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="450"
-        id="#left-pane">
+      <v-navigation-drawer v-model="drawer" app clipped :width="450" id="#left-pane">
         <v-container>
           <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
           <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
@@ -23,8 +22,7 @@
                 <th>
                   <v-checkbox v-model="toggleUnalloc" :disabled="unallocated.length == 0" />
                 </th>
-                <th v-for="header in headers" :key="header.text">{{ header.text }}</th>
-                <th>Quant</th>
+                <th v-for="header in filterHeaders" :key="header.text">{{ header.text }}</th>
               </tr>
             </thead>
             <draggable
@@ -39,16 +37,21 @@
                 <td>
                   <v-checkbox v-model="selectedUnalloc" :value="student" />
                 </td>
-                <td
-                  v-for="header in headers"
-                  :key="header.text"
-                  :header="header"
-                >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
-                <td>
-                  <v-layout align-center justify-center>
-                    <v-icon v-if="isQuant(student)" color="green">mdi-check</v-icon>
+                <td v-for="header in filterHeaders" :key="header.text" :header="header">
+                  <span v-if="header.function">{{ header.function(student) }}</span>
+                  <v-layout
+                    v-else-if="header.type === &quot;booly&quot;"
+                    align-center
+                    justify-center
+                  >
+                    <v-icon
+                      class="align-center justify-center"
+                      v-if="propertyIsTruthy(student, header.value)"
+                      color="green"
+                    >mdi-check</v-icon>
                     <v-icon v-else color="red">mdi-close</v-icon>
                   </v-layout>
+                  <span v-else>{{ student[header.value] }}</span>
                 </td>
               </tr>
             </draggable>
@@ -110,7 +113,7 @@
             </v-col>
           </v-row>
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
-            <transition-group name="slide-fade" tag="div" class="row layout wrap" >
+            <transition-group name="slide-fade" tag="div" class="row layout wrap">
               <v-col
                 cols="3"
                 sm="12"
@@ -128,7 +131,12 @@
                         <v-list-item-title class="headline mb-1 pa-2">
                           <v-tooltip left>
                             <template v-slot:activator="{ on }">
-                              <v-icon v-on="on" medium @click="removeGroup(group.groupId)" class="delete-group-button">delete</v-icon>
+                              <v-icon
+                                v-on="on"
+                                medium
+                                @click="removeGroup(group.groupId)"
+                                class="delete-group-button"
+                              >delete</v-icon>
                             </template>
                             <span>Delete the whole group</span>
                           </v-tooltip>
@@ -139,9 +147,10 @@
                         <table class="table is-narrower is-hoverable is-fullwidth">
                           <thead>
                             <tr>
-                              <th v-for="header in headers" :key="header.text">{{ header.text }}</th>
-                              <th>Quant</th>
-
+                              <th
+                                v-for="header in filterHeaders"
+                                :key="header.text"
+                              >{{ header.text }}</th>
                               <th></th>
                             </tr>
                           </thead>
@@ -158,15 +167,24 @@
                               :student="student"
                             >
                               <td
-                                v-for="header in headers"
+                                v-for="header in filterHeaders"
                                 :key="header.text"
                                 :header="header"
-                              >{{ header.value === null ? header.function(student) : student[header.value] }}</td>
-                              <td>
-                                <v-layout align-center justify-center>
-                                  <v-icon v-if="isQuant(student)" color="green">mdi-check</v-icon>
+                              >
+                                <span v-if="header.function">{{ header.function(student) }}</span>
+                                <v-layout
+                                  v-else-if="header.type === &quot;booly&quot;"
+                                  align-center
+                                  justify-center
+                                >
+                                  <v-icon
+                                    class="align-center justify-center"
+                                    v-if="propertyIsTruthy(student, header.value)"
+                                    color="green"
+                                  >mdi-check</v-icon>
                                   <v-icon v-else color="red">mdi-close</v-icon>
                                 </v-layout>
+                                <span v-else>{{ student[header.value] }}</span>
                               </td>
                               <td>
                                 <v-tooltip right>
@@ -182,8 +200,6 @@
                               </td>
                             </tr>
                           </draggable>
-                          <!-- Implement a delete button in this slot -->
-                          <!-- Custom country/timezone display -->
                         </table>
                       </v-list-item-content>
                     </v-list-item>
@@ -225,21 +241,31 @@
             <v-row align="center">
               <v-col cols="12">
                 <v-data-table
-                  :headers="unallocHeaders"
+                  :headers="filterHeaders"
                   :items="currentEditGroup"
                   hide-default-footer
                   item-key="id"
                   class="elevation-1 mx-5"
                 >
-                  <!-- Custom country/timezone display -->
-                  <template v-slot:item.country="{ item }">{{ getLocationDisplay(item) }}</template>
-                  <template v-slot:item.quant="{ item }">
-                    <td>
-                      <v-layout align-center justify-center>
-                        <v-icon v-if="isQuant(item)" color="green">mdi-check</v-icon>
-                        <v-icon v-else color="red">mdi-close</v-icon>
-                      </v-layout>
-                    </td>
+                  <template v-slot:item="{ item }">
+                    <tr>
+                      <td v-for="header in filterHeaders" :key="header.text" :header="header">
+                        <span v-if="header.function">{{ header.function(item) }}</span>
+                        <v-layout
+                          v-else-if="header.type === &quot;booly&quot;"
+                          align-center
+                          justify-center
+                        >
+                          <v-icon
+                            class="align-center justify-center"
+                            v-if="propertyIsTruthy(item, header.value)"
+                            color="green"
+                          >mdi-check</v-icon>
+                          <v-icon v-else color="red">mdi-close</v-icon>
+                        </v-layout>
+                        <span v-else>{{ item[header.value] }}</span>
+                      </td>
+                    </tr>
                   </template>
                 </v-data-table>
               </v-col>
@@ -275,21 +301,31 @@
             <v-row align="center">
               <v-col cols="12">
                 <v-data-table
-                  :headers="unallocHeaders"
+                  :headers="filterHeaders"
                   :items="selectedUnalloc"
                   hide-default-footer
                   item-key="id"
                   class="elevation-1 mx-5"
                 >
-                  <!-- Custom country/timezone display -->
-                  <template v-slot:item.country="{ item }">{{ getLocationDisplay(item) }}</template>
-                  <template v-slot:item.quant="{ item }">
-                    <td>
-                      <v-layout align-center justify-center>
-                        <v-icon v-if="isQuant(item)" color="green">mdi-check</v-icon>
-                        <v-icon v-else color="red">mdi-close</v-icon>
-                      </v-layout>
-                    </td>
+                  <template v-slot:item="{ item }">
+                    <tr>
+                      <td v-for="header in filterHeaders" :key="header.text" :header="header">
+                        <span v-if="header.function">{{ header.function(item) }}</span>
+                        <v-layout
+                          v-else-if="header.type === &quot;booly&quot;"
+                          align-center
+                          justify-center
+                        >
+                          <v-icon
+                            class="align-center justify-center"
+                            v-if="propertyIsTruthy(item, header.value)"
+                            color="green"
+                          >mdi-check</v-icon>
+                          <v-icon v-else color="red">mdi-close</v-icon>
+                        </v-layout>
+                        <span v-else>{{ item[header.value] }}</span>
+                      </td>
+                    </tr>
                   </template>
                 </v-data-table>
               </v-col>
@@ -376,9 +412,7 @@
       </v-dialog>
       <v-dialog v-model="filterDialog" max-width="40%">
         <v-card>
-          <v-card-title justify-center>
-            Adjust filters to modify checkers
-          </v-card-title>
+          <v-card-title justify-center>Adjust filters to modify checkers</v-card-title>
           <Filters></Filters>
           <v-card-actions justify-center>
             <v-btn color="green darken-1" large text @click="filterDialog=false">Done</v-btn>
@@ -392,12 +426,12 @@
 <script>
 import { generate } from "../utility/parser/myparser";
 import saveAs from "file-saver";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import backDialog from "../dialogs/backDialog";
 import Checker from "./Checker";
 import { isEqual } from "lodash";
 import draggable from "vuedraggable";
-import { isQuant } from "../utility/checkers";
+import { propertyIsTruthy } from "../utility/checkers";
 import Filters from "./Filters";
 
 export default {
@@ -459,9 +493,10 @@ export default {
         }
       }
     },
-    ...mapState(["results", "originalResults"])
+    ...mapState(["results", "originalResults"]),
+    ...mapGetters(["filterHeaders"])
   },
-  data: function() {
+  data() {
     return {
       search: "",
       drawer: null,
@@ -483,55 +518,12 @@ export default {
       groups: [],
       unallocated: [],
       selectedUnalloc: [],
-      active: [],
-      headers: [
-        {
-          text: "CID",
-          value: "id"
-        },
-        {
-          text: "Gender",
-          value: "gender"
-        },
-        {
-          text: "Age",
-          value: "age"
-        },
-        {
-          text: "Country",
-          value: null,
-          function: this.getLocationDisplay
-        }
-      ],
-      unallocHeaders: [
-        {
-          text: "CID",
-          value: "id"
-        },
-        {
-          text: "Gender",
-          value: "gender"
-        },
-        {
-          text: "Age",
-          value: "age"
-        },
-        {
-          text: "Country",
-          value: "country"
-        },
-        {
-          text: "Quant",
-          value: "quant"
-        }
-      ]
+      active: []
     };
   },
   methods: {
-    isQuant,
+    propertyIsTruthy,
     logMove(groupId, event) {
-      console.log(groupId);
-      console.log(event);
       if (event.added) {
         event.added.element.groupId = groupId;
       } else if (event.removed) {
@@ -594,7 +586,6 @@ export default {
       this.resetDialog = false;
     },
     unallocateStudent(student) {
-      console.log(student);
       this.selectedStudent = student;
       if (this.groups[student.groupId - 1].students.length == 1) {
         this.lastWarning = true;
@@ -683,8 +674,6 @@ export default {
       this.editDialog = false;
     },
     confirmNewGroup() {
-      // Set the new group ID for each student
-      console.log(this.editGroupId);
       for (const student of this.selectedUnalloc) {
         student.groupId = this.editGroupId;
       }
@@ -703,35 +692,23 @@ export default {
         e => !this.groups[this.editGroupId - 1].students.includes(e)
       );
       this.newDialog = false;
-    },
-    getLocationDisplay(student) {
-      let timezone = "";
-      if (student.timezone > 0) {
-        timezone = `(UTC +${student.timezone})`;
-      } else if (student.timezone < 0) {
-        timezone = `(UTC ${student.timezone})`;
-      } else if (student.timezone == 0) {
-        timezone = "(UTC)";
-      }
-      return student.country + " " + timezone;
     }
   },
   mounted() {
     this.generateGroups();
     const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
     if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
-
       setTimeout(function() {
         require("intro.js")()
-        .addStep({
-          element: ".result-group:nth-of-type(1)",
-          intro: "You can drag the students in and out of the groups."
-        })
-        .addStep({
-          element: ".result-group:nth-of-type(1) i",
-          intro: "Click here if you want to remove the whole group."
-        })
-        .start();
+          .addStep({
+            element: ".result-group:nth-of-type(1)",
+            intro: "You can drag the students in and out of the groups."
+          })
+          .addStep({
+            element: ".result-group:nth-of-type(1) i",
+            intro: "Click here if you want to remove the whole group."
+          })
+          .start();
       }, 2000);
 
       this.$localStorage.set(hasDisplayGroupsGuideRanField, true);

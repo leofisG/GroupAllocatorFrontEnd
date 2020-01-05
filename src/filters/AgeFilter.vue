@@ -12,7 +12,6 @@
     <v-list-item v-if="currentType == &quot;Different&quot;">
       <v-text-field
         type="number"
-        min="1"
         label="Age difference"
         clearable
         v-model="ageDiff"
@@ -23,14 +22,17 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-
 export default {
   name: "agefilter",
-  computed: {
-    ...mapState(["filters"])
+  props: {
+    id: Number
   },
-  data: function() {
+  computed: {
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    },
+  },
+  data() {
     return {
       currentType: "Same",
       ageTypes: ["Same", "Different"],
@@ -38,18 +40,18 @@ export default {
     };
   },
   watch: {
-    currentType: function() {
+    currentType() {
       this.validateAge();
       this.updateFilters();
     },
-    ageDiff: function() {
+    ageDiff() {
       this.updateFilters();
     }
   },
-  mounted: function() {
-    if ("ageDiff" in this.filters && this.filters.ageDiff > 0) {
+  mounted() {
+    if ("ageDiff" in this.filter && this.filter.ageDiff > 0) {
       this.currentType = "Different";
-      this.ageDiff = this.filters.ageDiff;
+      this.ageDiff = this.filter.ageDiff;
     } else {
       this.updateFilters();
     }
@@ -60,14 +62,13 @@ export default {
         if (this.ageDiff < 1) {
           this.ageDiff = 1;
         }
-        if (this.ageDiff > 70) {
-          this.ageDiff = 70;
+        if (this.ageDiff > 100) {
+          this.ageDiff = 100;
         }
       }
     },
     remove() {
-      this.$store.commit("removeFromFilter", ["ageDiff"]);
-      this.$store.commit("removeFilter", "AgeFilter");
+      this.$store.commit("removeFilter", this.id);
     },
     updateFilters() {
       const values =
@@ -76,9 +77,9 @@ export default {
               ageDiff: 0
             }
           : {
-              ageDiff: this.ageDiff
+              ageDiff: Number(this.ageDiff)
             };
-      this.$store.commit("updateFilters", values);
+      this.$store.commit("updateFilter", { id: this.id, values });
     }
   }
 };
