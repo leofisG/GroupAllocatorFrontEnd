@@ -16,7 +16,7 @@
             <v-icon color="orange">mdi-exclamation</v-icon>
             {{ unallocated.length }} unallocated students
           </p>
-          <table class="table is-narrower is-hoverable is-fullwidth is-scrollable">
+          <table class="table is-narrow is-hoverable is-fullwidth is-scrollable">
             <thead>
               <tr>
                 <th>
@@ -115,11 +115,11 @@
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
             <transition-group name="slide-fade" tag="div" class="row layout wrap">
               <v-col
-                cols="3"
+                cols="6"
                 sm="12"
-                md="6"
-                lg="6"
-                xl="4"
+                md="12"
+                lg="12"
+                xl="6"
                 v-for="group in groups"
                 :key="group.groupId"
                 :group="group"
@@ -144,7 +144,7 @@
                           <group-checker :group="group.students" class="group-checker"></group-checker>
                         </v-list-item-title>
                         <!-- To implement draggable tables with v-data-table is clunky -->
-                        <table class="table is-narrower is-hoverable is-fullwidth">
+                        <table class="table is-narrow is-hoverable is-fullwidth">
                           <thead>
                             <tr>
                               <th
@@ -174,11 +174,8 @@
                                 <span v-if="header.function">{{ header.function(student) }}</span>
                                 <v-layout
                                   v-else-if="header.type === &quot;booly&quot;"
-                                  align-center
-                                  justify-center
                                 >
                                   <v-icon
-                                    class="align-center justify-center"
                                     v-if="propertyIsTruthy(student, header.value)"
                                     color="green"
                                   >mdi-check</v-icon>
@@ -499,7 +496,7 @@ export default {
   data() {
     return {
       search: "",
-      drawer: null,
+      drawer: false,
 
       csvDialog: false,
       backDialog: false,
