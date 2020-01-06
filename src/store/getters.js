@@ -111,6 +111,7 @@ const validFilterHeaders = new Map([
     ["lastName", () => true],
     ["gender", filters => filters.some(f => f.type === "GenderFilter")],
     ["age", filters => filters.some(f => f.type === "AgeFilter")],
+    ["country", () => true]
 ]);
 
 export const filterHeaders = state => {

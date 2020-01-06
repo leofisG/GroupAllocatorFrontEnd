@@ -248,7 +248,7 @@ export const getLocationDisplay = student => {
     } else if (student.timezone == 0) {
         timezone = "(UTC)";
     }
-    return student.country + " " + timezone;
+    return timezone;
 }
 
 export const isMinMaxHeader = (header, filters) => {
