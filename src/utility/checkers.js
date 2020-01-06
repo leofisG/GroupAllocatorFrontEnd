@@ -77,7 +77,6 @@ export const checkTimeZone = (group, filter) => {
     const currentDiffs = new Set();
     let currentMax = 0;
     for (const student of group) {
-        console.log(student.timezone)
         const timezone = student.timezone || 0
         for (const existing of currentDiffs) {
             const difference = getDiff(timezone, existing);

@@ -53,6 +53,9 @@ export default {
     availableMaxFields() {
       return this.$store.getters.availableMaxFields(this.selectedField);
     },
+    filter() {
+      return this.$store.getters.getFilter(this.id);
+    },
     ...mapState(["openFilters", "parsedHeaders"]),
     ...mapGetters(["studentCount"])
   },

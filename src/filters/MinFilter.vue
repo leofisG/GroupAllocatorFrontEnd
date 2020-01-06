@@ -92,7 +92,9 @@ export default {
       }
     },
     selectedField() {
-      this.selectedValue = "";
+      if (!(this.availableValues.includes(this.selectedValue))) {
+        this.selectedValue = "";
+      }
     },
     selectedValue() {
       this.updateFilters();
@@ -114,15 +116,19 @@ export default {
     const filter = this.filter;
     if (filter.values) {
       if (filter.values.field !== undefined) {
+        console.log("Here");
         this.selectedField = filter.values.field;
       }
       if (filter.values.value !== undefined) {
+        console.log("Here2");
         this.selectedValue = filter.values.value;
       }
       if (!isNaN(filter.values.minimum)) {
+        console.log("Here3");
         this.selectedMinimum = filter.values.minimum;
       }
     }
+    console.log(this.selectedValue);
     this.updateFilters();
   },
   methods: {

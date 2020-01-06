@@ -48,12 +48,13 @@ export default {
     }
   },
   mounted() {
-    if ("timezoneDiff" in this.filter.values) {
-      if (this.filter.values.timezoneDiff === 0) {
+    const filter = this.filter;
+    if ("timezoneDiff" in filter.values) {
+      if (filter.values.timezoneDiff === 0) {
         this.currentType = "Same";
       } else {
         this.currentType = "Different";
-        this.timezoneDiff = this.filter.values.timezoneDiff;
+        this.timezoneDiff = filter.values.timezoneDiff;
       }
     }
     this.updateFilters();

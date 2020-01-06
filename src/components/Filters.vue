@@ -1,15 +1,7 @@
 <template>
   <v-list dense>
-    <v-list-item
-      class="pa-2"
-      v-for="filter in openFilters"
-      :key="filter.id"
-      v-bind:filter="filter"
-    >
-    <component
-      :is="filter.type"
-      :id="filter.id"
-    />
+    <v-list-item class="pa-2" v-for="filter in openFilters" :key="filter.id" v-bind:filter="filter">
+      <component :is="filter.type" :id="filter.id" />
     </v-list-item>
     <v-menu v-if="availableFilters.length > 0" offset-x close-on-content-click open-on-hover>
       <template v-slot:activator="{ on:menu }">
@@ -23,7 +15,12 @@
         </v-tooltip>
       </template>
       <v-list>
-        <v-list-item v-for="(filter, index) in availableFilters" @click="addFilter(filter)" :key="index" v-bind:filter="filter">
+        <v-list-item
+          v-for="(filter, index) in availableFilters"
+          @click="addFilter(filter)"
+          :key="index"
+          v-bind:filter="filter"
+        >
           <v-tooltip right>
             <template v-slot:activator="{ on: tooltip }">
               <v-list-item-title v-on="{ ...tooltip }">{{ filter.name }}</v-list-item-title>
@@ -44,7 +41,7 @@ import GenderFilter from "../filters/GenderFilter";
 import MinFilter from "../filters/MinFilter";
 import MaxFilter from "../filters/MaxFilter";
 
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "filters",

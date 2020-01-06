@@ -86,7 +86,7 @@ export const requestData = state => {
         if (header.type === "booly" && isTruthy(value.value)) {
             filters[value.convertedName] = `${value.minimum}, ${filters.groupSizeUpperBound}`;
             for (const student of students) {
-                student[value.convertedName] = isTruthy(value.convertedName) ? "true" : "false";
+                student[value.convertedName] = student[value.convertedName] === value.value ? "true" : "false";
             }
         } else {
             const newName = `${value.convertedName}_is_${value.value.replace(/\s/i, "_")}`

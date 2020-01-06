@@ -30,7 +30,7 @@ export default {
   computed: {
     filter() {
       return this.$store.getters.getFilter(this.id);
-    },
+    }
   },
   data() {
     return {
@@ -49,12 +49,12 @@ export default {
     }
   },
   mounted() {
-    if ("ageDiff" in this.filter && this.filter.ageDiff > 0) {
+    const filter = this.filter;
+    if ("ageDiff" in filter.values && filter.values.ageDiff > 0) {
       this.currentType = "Different";
-      this.ageDiff = this.filter.ageDiff;
-    } else {
-      this.updateFilters();
+      this.ageDiff = filter.values.ageDiff;
     }
+    this.updateFilters();
   },
   methods: {
     validateAge() {

@@ -1,7 +1,7 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="450" id="#left-pane">
+      <v-navigation-drawer v-model="drawer" app clipped :width="600" id="#left-pane">
         <v-container>
           <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
           <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
