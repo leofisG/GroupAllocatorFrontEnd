@@ -62,6 +62,7 @@ export const setWarning = (state, payload) => {
     const index = state.openFilters.findIndex(f => f.id === payload.id);
     if (index !== -1) {
         state.openFilters[index].error = payload.value;
+        state.openFilters[index].errorMessage = payload.message;
     }
 }
 

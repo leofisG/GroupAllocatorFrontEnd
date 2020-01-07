@@ -20,6 +20,7 @@ const state = {
       id: 0,
       values: {},
       error: false,
+      errorMessage: ""
     }
   ],
   removableFilters: [
@@ -29,7 +30,8 @@ const state = {
       tooltip: "Group people from the same timezone or a range of timezones.",
       id: null,
       values: {},
-      error: false
+      error: false,
+      errorMessage: ""
     },
     {
       type: "AgeFilter",
@@ -37,7 +39,8 @@ const state = {
       tooltip: "Group people with the same age or a range of ages.",
       id: null,
       values: {},
-      error: false
+      error: false,
+      errorMessage: ""
     },
     {
       type: "GenderFilter",
@@ -45,7 +48,8 @@ const state = {
       tooltip: "Adjust the gender allocation of groups, using limits or percentages.",
       id: null,
       values: {},
-      error: false
+      error: false,
+      errorMessage: ""
     },
     {
       type: "MinFilter",
@@ -55,7 +59,8 @@ const state = {
       value: null,
       id: null,
       values: {},
-      error: false
+      error: false,
+      errorMessage: ""
     },
     {
       type: "MaxFilter",
@@ -64,7 +69,8 @@ const state = {
       field: null,
       id: null,
       values: {},
-      error: false
+      error: false,
+      errorMessage: ""
     }
   ],
   openFilters: [],

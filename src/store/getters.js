@@ -36,7 +36,7 @@ export const maxFieldsInUse = state => {
 }
 
 export const filterWarnings = state => {
-    return state.openFilters.filter(f => f.error).map(f => f.type);
+    return state.openFilters.filter(f => f.error)
 }
 
 export const requestData = state => {

@@ -49,17 +49,21 @@
                 >
                   <template v-slot:item="{ item }">
                     <tr>
-                    <td v-for="header in parsedHeaders" :key="header.text" :header="header">
-                      <v-layout v-if="header.type === &quot;booly&quot;" align-center justify-center>
-                        <v-icon
-                          class="align-center justify-center"
-                          v-if="propertyIsTruthy(item, header.value)"
-                          color="green"
-                        >mdi-check</v-icon>
-                        <v-icon v-else color="red">mdi-close</v-icon>
-                      </v-layout>
-                      <span v-else>{{ item[header.value] }}</span>
-                    </td>
+                      <td v-for="header in parsedHeaders" :key="header.text" :header="header">
+                        <v-layout
+                          v-if="header.type === &quot;booly&quot;"
+                          align-center
+                          justify-center
+                        >
+                          <v-icon
+                            class="align-center justify-center"
+                            v-if="propertyIsTruthy(item, header.value)"
+                            color="green"
+                          >mdi-check</v-icon>
+                          <v-icon v-else color="red">mdi-close</v-icon>
+                        </v-layout>
+                        <span v-else>{{ item[header.value] }}</span>
+                      </td>
                     </tr>
                   </template>
                 </v-data-table>
@@ -83,14 +87,20 @@
       ></back-dialog>
       <v-dialog v-model="warningDialog" max-width="40%">
         <v-card>
-          <v-card-title class="headline justify-center">Error in filters!</v-card-title>
-          <v-alert class="mx-5" type="error">Please correct errors in the following filters:</v-alert>
+          <v-card-title
+            class="headline justify-center"
+          >Critical error in filters prevents allocation!</v-card-title>
+          <v-alert
+            class="mx-5"
+            type="error"
+          >Please correct errors in the following filters and try again:</v-alert>
           <v-list>
-            <v-list-item
-              v-for="warning in filterWarnings"
-              :key="warning"
-              :v-bind:warning="warning"
-            >{{warning}}</v-list-item>
+            <v-list-item v-for="warning in filterWarnings" :key="warning.id" :v-bind:warning="warning">
+              <v-list-item-content>
+                <v-list-item-title>{{ warning.type }}</v-list-item-title>
+                <v-list-item-subtitle>{{ warning.errorMessage }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
           <v-card-actions>
             <v-spacer></v-spacer>

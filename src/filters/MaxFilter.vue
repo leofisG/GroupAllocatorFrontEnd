@@ -64,12 +64,14 @@ export default {
       if (this.minError) {
         this.$store.commit("setWarning", {
           id: this.id,
-          value: true
+          value: true,
+          message: this.minErrorMessage
         });
       } else {
         this.$store.commit("setWarning", {
           id: this.id,
-          value: false
+          value: false,
+          message: ""
         });
       }
     },

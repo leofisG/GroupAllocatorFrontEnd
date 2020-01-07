@@ -160,26 +160,27 @@ export default {
     checkMargin() {
       if (this.currentType == "Ratio-based") {
         if (!this.isMinRatio()) {
-          this.marginErrors = [
-            `Your minimum margin should be ${this.minRatio}`
-          ];
+          const message = `Your minimum margin should be ${this.minRatio}`;
+          this.marginErrors = [message]
           this.$store.commit("setWarning", {
             id: this.id,
-            value: true
+            value: true,
+            message
           });
         } else if (!this.isMaxRatio()) {
-          this.marginErrors = [
-            `Margin cannot be bigger than ${this.maxRatio}!`
-          ];
+          const message = `Margin cannot be bigger than ${this.maxRatio}!`;
+          this.marginErrors = [message]
           this.$store.commit("setWarning", {
             id: this.id,
-            value: true
+            value: true,
+            message
           });
         } else {
           this.marginErrors = [];
           this.$store.commit("setWarning", {
             id: this.id,
-            value: false
+            value: false,
+            message: ""
           });
         }
       }
@@ -196,12 +197,14 @@ export default {
         if (this.checkMinVal) {
           this.$store.commit("setWarning", {
             id: this.id,
-            value: true
+            value: true,
+            message: this.minErrorMessage
           });
         } else {
           this.$store.commit("setWarning", {
             id: this.id,
-            value: false
+            value: false,
+            message: ""
           });
         }
       }
@@ -226,7 +229,8 @@ export default {
       if (this.currentType == "Same genders") {
         this.$store.commit("setWarning", {
           id: this.id,
-          value: false
+          value: false,
+          message: ""
         });
       } else if (this.currentType == "Ratio-based") {
         this.checkMargin();
