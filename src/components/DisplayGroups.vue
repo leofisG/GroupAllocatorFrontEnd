@@ -1,7 +1,7 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="600" id="#left-pane">
+      <v-navigation-drawer v-model="drawer" app clipped :width="barWidth" id="#left-pane">
         <v-container>
           <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
           <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
@@ -115,11 +115,7 @@
           <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
             <transition-group name="slide-fade" tag="div" class="row layout wrap">
               <v-col
-                cols="6"
-                sm="12"
-                md="12"
-                lg="6"
-                xl="6"
+                :cols="calculateCols"
                 v-for="group in groups"
                 :key="group.groupId"
                 :group="group"
@@ -440,6 +436,15 @@ export default {
     Filters
   },
   computed: {
+    calculateCols() {
+      return Math.floor(12 / Math.floor(window.innerWidth / this.requiredWidth));
+    },
+    requiredWidth() {
+      return this.filterHeaders.length * 120 + 40 + 32;
+    },
+    barWidth() {
+      return this.filterHeaders.length * 120 + 32;
+    },
     addButtonDisabled() {
       return this.selectedUnalloc.length == 0 || this.groups.length == 0;
     },
