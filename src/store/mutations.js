@@ -1,6 +1,7 @@
 import { cloneDeep } from 'lodash';
 import { checkFilterValidity } from '../utility/checkers';
 import { baseFilters } from './getters'
+import { generateResultMessage } from '../utility/request'
 
 export const setparsedStudents = (state, result) => {
     state.parsedStudents = result;
@@ -10,16 +11,20 @@ export const setParsedHeaders = (state, headers) => {
     state.parsedHeaders = headers;
 }
 
-export const removeResults = state => {
-    state.results = null;
+export const resetRequestStatus = (state) => {
+    state.requestDone = false;
 }
 
-export const storeResults = (state, results) => {
-    state.results = results;
+export const setRequestStatus = (state) => {
+    state.requestDone = true;
 }
 
-export const updateResultStudents = (state, students) => {
-    state.results = { ...state.results, students: students };
+export const storeUnparsedResults = (state, results) => {
+    state.unparsedResults = results;
+}
+
+export const commitParsedResults = (state, students) => {
+    state.results = { ...state.unparsedResults, students: students };
     state.originalResults = cloneDeep(state.results);
 }
 
@@ -64,6 +69,21 @@ export const setWarning = (state, payload) => {
         state.openFilters[index].error = payload.value;
         state.openFilters[index].errorMessage = payload.message;
     }
+}
+
+export const setRequestError = (state, error) => {
+    state.requestError = error;
+}
+
+export const clearRequestError = (state) => {
+    state.requestError = {
+        status: null,
+        message: null
+    }
+}
+
+export const setAllocationMessage = (state, response) => {
+    state.allocationMessage = generateResultMessage(response)
 }
 
 export const updateURL = (state, index) => {

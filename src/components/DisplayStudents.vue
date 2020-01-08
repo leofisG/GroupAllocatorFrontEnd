@@ -23,7 +23,7 @@
         <v-btn
           color="green darken-1 white--text"
           justify-end
-          @click="checkSubmission"
+          @click="startSubmission"
         >Generate groups</v-btn>
       </v-app-bar>
       <v-content>
@@ -85,79 +85,17 @@
         destination="the upload screen"
         lossWarning="The current file"
       ></back-dialog>
-      <v-dialog v-model="warningDialog" max-width="40%">
-        <v-card>
-          <v-card-title
-            class="headline justify-center"
-          >Critical error in filters prevents allocation!</v-card-title>
-          <v-alert
-            class="mx-5"
-            type="error"
-          >Please correct errors in the following filters and try again:</v-alert>
-          <v-list>
-            <v-list-item v-for="warning in filterWarnings" :key="warning.id" :v-bind:warning="warning">
-              <v-list-item-content>
-                <v-list-item-title>{{ warning.type }}</v-list-item-title>
-                <v-list-item-subtitle>{{ warning.errorMessage }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red" text @click="warningDialog = false">back</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="nextDialog" max-width="40%">
-        <v-card>
-          <v-card-title class="headline justify-center">Allocate groups?</v-card-title>
-          <v-alert class="mx-5" type="info">Have you chosen the correct filters?</v-alert>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red" text @click="nextDialog = false">back</v-btn>
-            <v-btn color="green darken-1" text @click="prepareRequest">Confirm</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="resultDialog" max-width="40%" persistent>
-        <v-card>
-          <v-card-title
-            v-if="!results"
-            class="headline justify-center"
-          >Generating Group Allocation...</v-card-title>
-          <v-card-title v-if="results" class="headline justify-center">Allocation successful!</v-card-title>
-          <v-alert v-if="results" class="mx-5" type="info">{{ allocationMessage }}</v-alert>
-          <v-progress-circular v-if="!results" indeterminate color="primary"></v-progress-circular>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red" text @click="cancelResults">Cancel</v-btn>
-            <v-btn v-if="results" color="green darken-1" text @click="showResults">Show results</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="errorDialog" max-width="40%">
-        <v-card>
-          <v-card-title class="headline justify-center">Server error occured!</v-card-title>
-          <v-card-text>Status: {{ error.status }}</v-card-text>
-          <v-card-text>Message: {{ error.message }}</v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red" text @click="errorDialog = false">Cancel</v-btn>
-            <v-btn color="green darken-1" text @click="prepareRequest">Try again</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <request-dialogs ref="requestDialogs" :repeat="false"></request-dialogs>
     </v-app>
   </div>
 </template>
 
 <script>
 import Filters from "./Filters";
-import { mapState, mapGetters } from "vuex";
-import sendRequest from "../utility/request";
+import { mapState } from "vuex";
 import backDialog from "../dialogs/backDialog";
-import { merge, cloneDeep } from "lodash";
 import { propertyIsTruthy } from "../utility/checkers";
+import requestDialogs from "../dialogs/requestDialogs"
 
 export default {
   name: "display",
@@ -174,27 +112,19 @@ export default {
         this.$store.commit("updateURL", index);
       }
     },
-    ...mapGetters(["filterWarnings"]),
-    ...mapState(["parsedStudents", "parsedHeaders", "results"])
+    ...mapState(["parsedStudents", "parsedHeaders"])
   },
   data() {
     return {
       search: "",
       drawer: null,
-
       backDialog: false,
-      warningDialog: false,
-      nextDialog: false,
-      errorDialog: false,
-      resultDialog: false,
-
-      allocationMessage: "",
-      error: {}
     };
   },
   components: {
     Filters,
-    "back-dialog": backDialog
+    "back-dialog": backDialog,
+    "request-dialogs": requestDialogs
   },
   mounted() {
     const hasDisplayStudentGuideRanField = "hasDisplayStudentGuideRan";
@@ -207,59 +137,11 @@ export default {
   },
   methods: {
     propertyIsTruthy,
-    prepareRequest() {
-      this.errorDialog = false;
-      this.error = {};
-      this.$store.commit("removeResults");
-      sendRequest(this);
-      this.nextDialog = false;
-      this.resultDialog = true;
-    },
     goBack() {
       this.$router.push({ path: "/uploadcsv" });
     },
-    cancelResults() {
-      this.resultDialog = false;
-    },
-    showResults() {
-      this.combineResults();
-      this.$router.push({ path: "display-groups" });
-    },
-    combineResults() {
-      const results = this.results.students;
-      const students = cloneDeep(this.parsedStudents);
-      const map = {};
-      for (const student of results) {
-        map[student.id] = {
-          groupId: student.groupId,
-          timezone: student.timezone,
-          timezoneOffset:
-            student.timezone > 0
-              ? "+" + student.timezone.toString()
-              : student.timezone.toString()
-        };
-      }
-      for (const student of students) {
-        merge(student, map[student.id]);
-      }
-      this.$store.commit("updateResultStudents", students);
-    },
-    generateResultMessage(response) {
-      let message = `${response.numOfGroup} groups allocated`;
-      if (response.numOfUnalloc == 1) {
-        message += ", 1 student could not be allocated";
-      } else if (response.numOfUnalloc > 1) {
-        message += `, ${response.numOfUnalloc} students could not be allocated`;
-      }
-      message += ".";
-      return message;
-    },
-    checkSubmission() {
-      if (this.filterWarnings.length > 0) {
-        this.warningDialog = true;
-      } else {
-        this.nextDialog = true;
-      }
+    startSubmission() {
+      this.$refs.requestDialogs.triggerSubmission();
     }
   }
 };

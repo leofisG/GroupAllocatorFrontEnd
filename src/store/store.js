@@ -75,11 +75,18 @@ const state = {
   ],
   openFilters: [],
   availableFilters: [],
-  multiFilters: [ "MinFilter", "MaxFilter" ],
+  multiFilters: ["MinFilter", "MaxFilter"],
   maxFieldsInUse: [],
+  requestDone: false,
+  unparsedResults: null,
   results: null,
+  allocationMessage: "",
   originalResults: null,
   warnings: [],
+  requestError: {
+    status: null,
+    message: null
+  }
 };
 
 const store = new Vuex.Store({

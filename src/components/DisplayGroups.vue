@@ -410,10 +410,11 @@
           <v-card-actions justify-center>
             <v-btn color="green darken-1" large @click="filterDialog=false">Done</v-btn>
             <v-spacer></v-spacer>
-            <v-btn justify-end align-end color="orange" large>Reallocate students</v-btn>
+            <v-btn justify-end align-end color="orange" large @click="reallocate">Reallocate students</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <request-dialogs ref="requestDialogs" :repeat="true" :toggleFilter="toggleFilter" :generate="generateGroups"></request-dialogs>
     </v-app>
   </div>
 </template>
@@ -428,11 +429,13 @@ import { isEqual } from "lodash";
 import draggable from "vuedraggable";
 import { propertyIsTruthy } from "../utility/checkers";
 import Filters from "./Filters";
+import requestDialogs from "../dialogs/requestDialogs"
 
 export default {
   name: "groupings",
   components: {
     "back-dialog": backDialog,
+    "request-dialogs": requestDialogs,
     "group-checker": Checker,
     draggable,
     Filters
@@ -701,10 +704,15 @@ export default {
       );
       this.newDialog = false;
     },
+    reallocate() {
+      this.$refs.requestDialogs.triggerSubmission();
+    },
+    toggleFilter() {
+      this.filterDialog = !this.filterDialog;
+    },
     setColumnWidth() {
       const possibleWidth = this.$refs.mainContainer.clientWidth - 40;
       this.columnWidth = Math.ceil(12 / Math.floor(possibleWidth / (this.filterHeaders.length * 100 + 100)));
-      console.log(this.columnWidth);
     },
   },
   mounted() {
