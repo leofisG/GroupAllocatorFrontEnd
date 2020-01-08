@@ -2,10 +2,10 @@
   <div id="login">
     <v-app>
       <v-content>
-        <v-container fluid>
+        <v-container fluid class="is-fluid">
           <v-row justify="center">
             <v-col cols="12" align="center">
-              <h2 class="display-2">Student Allocator</h2>
+              <h2 class="display-2">GroupIt!</h2>
               <p class="subtitle-1 font-italic" id="in-collaboration">In collaboration with</p>
               <v-img
                 align="end"

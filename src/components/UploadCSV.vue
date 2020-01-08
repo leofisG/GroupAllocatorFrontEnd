@@ -2,13 +2,13 @@
   <div id="upload">
     <v-app>
       <v-content>
-        <v-container fluid height="100%">
+        <v-container fluid height="100%" class="is-fluid">
           <v-row justify="start">
             <v-img max-width="10%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
           </v-row>
           <v-row justify="center">
             <v-col cols="6">
-              <h2 class="display-1 mx-3">Student Allocator</h2>
+              <h2 class="display-1 mx-3">GroupIt!</h2>
             </v-col>
           </v-row>
           <v-row justify="center" id="upload-row">

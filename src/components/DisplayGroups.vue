@@ -106,16 +106,16 @@
         >Download CSV</v-btn>
       </v-app-bar>
       <v-content>
-        <v-container class="fill-height mx-4" fluid>
+        <v-container fluid mx-4 class="is-fluid" ref="mainContainer">
           <v-row v-if="groups.length == 0" align="center" class="fill-height">
             <v-col cols="12" class="fill-height">
               <v-alert type="warning">No Groups have been allocated!</v-alert>
             </v-col>
           </v-row>
-          <v-row v-if="groups.length > 0" class="fill-height" align="start" justify="center">
+          <v-row v-if="groups.length > 0" no-gutters>
             <transition-group name="slide-fade" tag="div" class="row layout wrap">
               <v-col
-                :cols="calculateCols"
+                :cols="columnWidth"
                 v-for="group in groups"
                 :key="group.groupId"
                 :group="group"
@@ -214,7 +214,7 @@
       <v-dialog v-model="editDialog">
         <v-card>
           <v-card-title class="headline justify-center">Select a group to add to</v-card-title>
-          <v-container fluid>
+          <v-container fluid class="is-fluid">
             <v-row align="center">
               <v-col cols="12">
                 <v-select
@@ -274,7 +274,7 @@
       <v-dialog v-model="newDialog">
         <v-card>
           <v-card-title class="headline justify-center">Select the new group ID</v-card-title>
-          <v-container fluid>
+          <v-container fluid class="is-fluid">
             <v-row align="center">
               <v-col cols="12">
                 <v-select
@@ -405,10 +405,12 @@
       </v-dialog>
       <v-dialog v-model="filterDialog" max-width="40%">
         <v-card>
-          <v-card-title justify-center>Adjust filters to modify checkers</v-card-title>
+          <v-card-title justify-center>Adjust filters to modify checkers or re-allocate</v-card-title>
           <Filters></Filters>
           <v-card-actions justify-center>
-            <v-btn color="green darken-1" large text @click="filterDialog=false">Done</v-btn>
+            <v-btn color="green darken-1" large @click="filterDialog=false">Done</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn justify-end align-end color="orange" large>Reallocate students</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -435,15 +437,15 @@ export default {
     draggable,
     Filters
   },
+  created() {
+    window.addEventListener("resize", this.setColumnWidth)
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.setColumnWidth)
+  },
   computed: {
-    calculateCols() {
-      return Math.floor(12 / Math.floor(window.innerWidth / this.requiredWidth));
-    },
-    requiredWidth() {
-      return this.filterHeaders.length * 120 + 40 + 32;
-    },
     barWidth() {
-      return this.filterHeaders.length * 120 + 32;
+      return this.filterHeaders.length * 100 + 50;
     },
     addButtonDisabled() {
       return this.selectedUnalloc.length == 0 || this.groups.length == 0;
@@ -502,6 +504,7 @@ export default {
     return {
       search: "",
       drawer: false,
+      columnWidth: 12,
 
       csvDialog: false,
       backDialog: false,
@@ -697,9 +700,15 @@ export default {
         e => !this.groups[this.editGroupId - 1].students.includes(e)
       );
       this.newDialog = false;
-    }
+    },
+    setColumnWidth() {
+      const possibleWidth = this.$refs.mainContainer.clientWidth - 40;
+      this.columnWidth = Math.ceil(12 / Math.floor(possibleWidth / (this.filterHeaders.length * 100 + 100)));
+      console.log(this.columnWidth);
+    },
   },
   mounted() {
+    this.setColumnWidth();
     this.generateGroups();
     const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
     if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {

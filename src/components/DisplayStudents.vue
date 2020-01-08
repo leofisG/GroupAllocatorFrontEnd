@@ -18,7 +18,7 @@
       <v-app-bar app fixed clipped-left>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-img class="mx-2" max-width="4%" src="../assets/Logo/IB_LOGO_STACK_RGB_POSITIVE_RED.png"></v-img>
-        <v-toolbar-title>Student Allocator</v-toolbar-title>
+        <v-toolbar-title>GroupIt!</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn
           color="green darken-1 white--text"
@@ -27,7 +27,7 @@
         >Generate groups</v-btn>
       </v-app-bar>
       <v-content>
-        <v-container class="fill-height" fluid>
+        <v-container class="fill-height is-fluid" fluid>
           <v-row class="fill-height" align="start" justify="center">
             <v-col>
               <v-card height="100%">

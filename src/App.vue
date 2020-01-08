@@ -27,7 +27,7 @@ export default {
     }
   },
   created() {
-    document.title = "Student allocator";
+    document.title = "GroupIt!";
   }
 };
 </script>
