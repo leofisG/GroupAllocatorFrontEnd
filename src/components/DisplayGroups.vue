@@ -719,7 +719,7 @@ export default {
     this.setColumnWidth();
     this.generateGroups();
     const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
-    if (this.groups.length > 0 && !this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
+    if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
       setTimeout(function() {
         require("intro.js")()
           .addStep({
