@@ -1,7 +1,7 @@
 <template>
   <div class="groupings">
     <v-app id="mainScreen">
-      <v-navigation-drawer v-model="drawer" app clipped :width="barWidth" id="#left-pane">
+      <v-navigation-drawer disable-resize-watcher v-model="drawer" app clipped :width="barWidth" id="#left-pane">
         <v-container>
           <v-btn class="mx-3" color="error" dark large @click="backDialog = true">Go back</v-btn>
           <v-btn class="mx-3" color="orange" dark large @click="filterDialog = true">Adjust filters</v-btn>
@@ -506,7 +506,7 @@ export default {
   data() {
     return {
       search: "",
-      drawer: false,
+      drawer: null,
       columnWidth: 12,
 
       csvDialog: false,
@@ -719,7 +719,7 @@ export default {
     this.setColumnWidth();
     this.generateGroups();
     const hasDisplayGroupsGuideRanField = "hasDisplayGroupsGuideRan";
-    if (!this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
+    if (this.groups.length > 0 && !this.$localStorage.get(hasDisplayGroupsGuideRanField)) {
       setTimeout(function() {
         require("intro.js")()
           .addStep({
