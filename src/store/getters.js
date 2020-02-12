@@ -6,8 +6,6 @@ export const studentCount = state => state.parsedStudents.length
 
 export const firstStudent = state => state.parsedStudents[0];
 
-export const rightURL = state => state.usedURL;
-
 export const availableMinFields = state => currentAttribute => {
     const minFields = minFieldsInUse(state).filter(f => currentAttribute === undefined || f !== currentAttribute);
     return state.parsedHeaders.filter(h => !minFields.includes(h.text) && h.type === "string" || h.type === "number" || h.type === "booly").map(h => h.text)

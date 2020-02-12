@@ -85,11 +85,3 @@ export const clearRequestError = (state) => {
 export const setAllocationMessage = (state, response) => {
     state.allocationMessage = generateResultMessage(response)
 }
-
-export const updateURL = (state, index) => {
-    if (index == 0) {
-        state.usedURL = state.productionURL
-    } else {
-        state.usedURL = state.debugURL
-    }
-}

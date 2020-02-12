@@ -68,12 +68,6 @@
                   </template>
                 </v-data-table>
               </v-card>
-              <v-card>
-                <v-btn-toggle class="mx-5" v-model="usedURL" mandatory>
-                  <v-btn>Master</v-btn>
-                  <v-btn>Sprint</v-btn>
-                </v-btn-toggle>
-              </v-card>
             </v-col>
           </v-row>
         </v-container>
@@ -100,18 +94,6 @@ import requestDialogs from "../dialogs/requestDialogs"
 export default {
   name: "display",
   computed: {
-    usedURL: {
-      get() {
-        if (this.$store.state.usedURL == this.$store.state.productionURL) {
-          return 0;
-        } else {
-          return 1;
-        }
-      },
-      set(index) {
-        this.$store.commit("updateURL", index);
-      }
-    },
     ...mapState(["parsedStudents", "parsedHeaders"])
   },
   data() {

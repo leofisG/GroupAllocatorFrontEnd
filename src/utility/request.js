@@ -4,12 +4,12 @@ import { merge, cloneDeep } from "lodash";
 export const sendRequest = display => {
     const requestData = store.getters.requestData;
     // eslint-disable-next-line
-    console.log("Sending to URL " + store.getters.rightURL)
+    console.log("Sending to URL " + store.state.productionURL)
     console.log(requestData)
     const xml = new XMLHttpRequest();
     xml.open(
         "POST",
-        store.getters.rightURL,
+        store.state.productionURL,
         true
     );
     xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
